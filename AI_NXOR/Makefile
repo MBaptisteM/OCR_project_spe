@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra
-TARGET = IAnxor
-SRCS = IAnxor.c
+TARGET = AInxor
+SRCS = AInxor.c
 OBJS = $(SRCS:.c=.o)
 all: $(TARGET)
 $(TARGET): $(OBJS)

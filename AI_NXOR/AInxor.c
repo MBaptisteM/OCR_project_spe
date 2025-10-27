@@ -2,7 +2,7 @@
    learn XNOR : A.B + !A.!B <=> A = B
 */
 
-#include "IAnxor.h"
+#include "AInxor.h"
 
 
 //random function -> [a,b]
@@ -142,10 +142,10 @@ int main(int argc, char* argv[]) {
     //print final weights
     printf("\nFinal weights :\nInput : ");
     for (int i=0;i<2;i++){
-	    printf("w_ho[%i]=%.6f  \n", i, w_ho[i]);
+	    printf("w_ho[%i]=%.6f   ", i, w_ho[i]);
     }
     for (int i=0;i<2;i++) {
-        printf("Hidden %i : w_ih[%i]=[%.6f, %.6f] b_h=%.6f\n", i, i, w_ih[i][0], w_ih[i][1], b_h[i]);
+        printf("\nHidden %i : w_ih[%i]=[%.6f, %.6f] b_h=%.6f\n", i, i, w_ih[i][0], w_ih[i][1], b_h[i]);
     }
     printf("Output : b_o=%.6f\n", b_o);
     printf("\n---------- Tests ----------\n\n");

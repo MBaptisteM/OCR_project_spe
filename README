@@ -1,0 +1,20 @@
+AI_NXOR :
+	This folder contains : 
+		-AInxor.c (the c programm that contains the AI for A.B+!A.!B), 
+		-AInxor.h (the header of AInxor.c), 
+		-Makefile (the Makefile that contains the commands to execute the programm).
+
+	How to use : 
+		-Write "make AInxor" to get the files AInxor.o and AInxor.exe
+		-Write "./AInxor" to execute the file AInxor.exe, you can also add up to three parameters :
+			(parameters : 1 -> int max_gen (N*) | 2 -> double learning rate (]0,1]) | 3 -> int error_goal (num of nubers after .) (N*))
+
+	The outputs :
+		Execute the .exe file will print 3 parts:
+			-A "Training" part where it is possible to see the errors during the training and the generation associated.
+			-A "Final" part where it is possible to see the value of each weight and biais of the final neuronal network.
+			-A "Tests" part where it is possible to see the results with all possible entries and if the result is right (success = True).
+		After an execution, 
+			the first line printed remeber how to use parameters,
+			the last line printed tell to the user if the .pdf file has been generated proprely or how to download .dot.
+		The .pdf file "network.pdf" represent the neuronal network with every node, layer and weight.
