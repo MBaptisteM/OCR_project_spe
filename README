@@ -12,7 +12,7 @@ AI_NXOR :
 	The outputs :
 		Execute the .exe file will print 3 parts:
 			-A "Training" part where it is possible to see the errors during the training and the generation associated.
-			-A "Final" part where it is possible to see the value of each weight and biais of the final neuronal network.
+			-A "Final" part where it is possible to see the value of each weight and bias of the final neuronal network.
 			-A "Tests" part where it is possible to see the results with all possible entries and if the result is right (success = True).
 		After an execution, 
 			the first line printed remeber how to use parameters,
