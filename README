@@ -16,5 +16,5 @@ AI_NXOR :
 			-A "Tests" part where it is possible to see the results with all possible entries and if the result is right (success = True).
 		After an execution, 
 			the first line printed remeber how to use parameters,
-			the last line printed tell to the user if the .pdf file has been generated proprely or how to download .dot.
-		The .pdf file "network.pdf" represent the neuronal network with every node, layer and weight.
+			the last line printed tell to the user if the .png file has been generated proprely or how to download .dot.
+		The .png file "network.png" represent the neuronal network with every node, layer and weight.
