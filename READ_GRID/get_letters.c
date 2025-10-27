@@ -110,7 +110,8 @@ void sort_by_families(struct Cell* cells, size_t n, struct Same_family*** famili
         centers[i].size_y = cells[i].y_max - cells[i].y_min;
     }
 
-    //array with distance betwen all centers
+    //array with distance between all centers
+    
     struct Same_family **distances = calloc(n, sizeof(struct Same_family*));
     if (distances == NULL)
         errx(EXIT_FAILURE, "fail in calloc distances");
@@ -131,21 +132,17 @@ void sort_by_families(struct Cell* cells, size_t n, struct Same_family*** famili
                 offset = 1;
         }
         mergeSort(tab, 0, n-2);
-        
         distances[i] = tab;
-        /*for (size_t j = 0; j < n-1; j++)
-            printf("i = %zu j = %zu dist = %f index = %zu\n", i, j,  distances[i][j].dist,  distances[i][j].index);*/
-        free(tab);
-        printf("\n\n");
     }
-    /**/for (int i = 0; i < n; i++)
+    
+    for (size_t i = 0; i < n; i++)
     {
-        for (int j = 0; j < n-1; j++)
+        for (size_t j = 0; j < n-1; j++)
         {
             printf("i = %zu j = %zu dist = %f index = %zu\n", i, j,  distances[i][j].dist,  distances[i][j].index);
-            //printf("Cell[%u] is at %f from cell[%zu]\n", i, distances[i][j].dist, distances[i][j].index);
         }
     }
+
     *families_sorted  = distances;
     /*size_t **families = calloc(n, sizeof(size_t*));
     if (families == NULL)
@@ -288,13 +285,7 @@ int main(int argc, char* argv[])
 
     struct Same_family **families;
     sort_by_families(cells, (size_t) n, &families);
-    /*for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n-1; j++)
-        {
-            printf("Cell[%u] is at %f from cell[%zu]\n", i, families[i][j].dist, families[i][j].index);
-        }
-    }*/
+    
     //save letters into images
     printf("debut\n");
     int offset = 0;
