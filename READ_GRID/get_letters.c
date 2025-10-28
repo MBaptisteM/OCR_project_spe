@@ -14,7 +14,6 @@ void dfs(unsigned char **img, int **labels, int w, int h, int x, int y, int labe
     //change info of the cell
 
     labels[y][x] = label;
-    //cell->area++;
 
     if (x < cell->x_min)
         cell->x_min = x;
@@ -62,12 +61,21 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                 cells[label-1].x_max = x;
                 cells[label-1].y_min = y;
                 cells[label-1].y_max = y;
+                
                 //cells[label-1].area = 0;
-
-
+                
                 dfs(img, labels, w, h, x, y, label, &cells[label-1]);
+                
+                //remove the cell if too small
+                
+                if (cells[label-1].x_max - cells[label-1].x_min < 10 && cells[label-1].y_max - cells[label-1].y_min < 10)
+                {
+                    label--;
+                    continue;
+                }
+                
                 //check if another cell contain this cell
-            
+                
                 for (int i = 0; i < label-1; i++)
                 {
                     struct Cell *c = &cells[i];
@@ -81,26 +89,124 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
             }
         }
     }
+    //mergeSortCells(cells, 0, (size_t)label-1);
+
+    /*for (int i = 1; i < label; ++i) //sort with x_min
+    {
+        struct Cell curr = cells[i];
+        int j = i - 1;
+
+        while (j >= 0 && cells[j].x_min > curr.x_min) 
+        {
+            cells[j + 1] = cells[j];
+            j = j - 1;
+        }
+        cells[j + 1] = curr;
+    }
+
+    for (int i = 1; i < label; ++i) 
+    {
+        struct Cell curr = cells[i];
+        int j = i - 1;
+
+        while (j >= 0 && cells[j].y_min > curr.y_min) 
+        {
+            cells[j + 1] = cells[j];
+            j = j - 1;
+        }
+        cells[j + 1] = curr;
+    }*/
+    /*for (size_t i = 1; i < label; ++i) 
+    {
+        
+        struct Cell curr = cells[i];
+        int j = i - 1;
+        //int mid_x = (curr.x_min + curr.x_max)/2;
+        int mid_y = (curr.y_min + curr.y_max)/2;
+        
+        while (j >= 0) 
+        {
+            int j_mid_y = (cells[j].y_min + cells[j].y_max)/2;
+            char swap = 0;
+            //if (!(mid_y <= j_mid_y + 5 && mid_y >= j_mid_y -5)) //same line
+            if (!(abs(mid_y - j_mid_y)) < 5)
+            {
+                if (j_mid_y > mid_y)
+                    swap = 1;
+            }
+            else
+            {
+                if (cells[j].x_min > curr.x_min)
+                    swap = 1;
+            }
+            if (!swap)
+                break;
+            
+            cells[j+1] = cells[j]; 
+            j--;
+        }
+        cells[j + 1] = curr;
+    }*/
     *out = cells;
     return label;
 }
+void mergeCells(struct Cell arr[], size_t l, size_t m, size_t r)
+{
+    
+    size_t i, j, k;
+    size_t n1 = m - l + 1;
+    size_t n2 = r - m;
 
-//void sort_by_families(struct Cell* cells, size_t n, struct Cell** grid, size_t *s_grid, struct Cell** words, size_t* s_words)
+    struct Cell L[n1], R[n2];
+    for (i = 0; i < n1; i++)
+        L[i] = arr[l + i];
+    for (j = 0; j < n2; j++)
+        R[j] = arr[m + 1 + j];
+    i = 0;
+    j = 0;
+    k = l;
+    while (i < n1 && j < n2) 
+    {
+        if (L[i].y_min <= R[j].y_min + 5 && L[i].y_min >= R[j].y_min - 5)
+        {
+            arr[k] = L[i];
+            i++;
+        }
+        else 
+        {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+    while (i < n1) 
+    {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+
+    while (j < n2) 
+    {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
+}
+
+void mergeSortCells(struct Cell arr[], size_t l, size_t r)
+{
+    if (l < r) 
+    {
+        size_t m = l + (r - l) / 2;
+        mergeSortCells(arr, l, m);
+        mergeSortCells(arr, m + 1, r);
+        mergeCells(arr, l, m, r);
+    }
+}
+
 void sort_by_families(struct Cell* cells, size_t n, struct Same_family*** families_sorted)
 {
-    //initialize temporary variables
-    
-    /*size_t size1 = 1;
-    size_t size2 = 1;
-    struct Cell* temp1 = calloc(size1, sizeof(struct Cell));
-    if (temp1 == NULL)
-        errx(EXIT_FAILURE, "fail calloc temp1");
-    struct Cell* temp2 = calloc(size2, sizeof(struct Cell));
-    if (temp2 == NULL)
-    errx(EXIT_FAILURE, "fail calloc temp2");*/
-
-    //initialize an array that will contain center of our cells
-
     struct Center centers[n];
     for (size_t i = 0; i < n; i++)
     {
@@ -135,22 +241,15 @@ void sort_by_families(struct Cell* cells, size_t n, struct Same_family*** famili
         distances[i] = tab;
     }
     
-    for (size_t i = 0; i < n; i++)
+    /*for (size_t i = 0; i < n; i++)
     {
         for (size_t j = 0; j < n-1; j++)
         {
             printf("i = %zu j = %zu dist = %f index = %zu\n", i, j,  distances[i][j].dist,  distances[i][j].index);
         }
-    }
+    }*/
 
     *families_sorted  = distances;
-    /*size_t **families = calloc(n, sizeof(size_t*));
-    if (families == NULL)
-        errx(EXIT_FAILURE, "fail in calloc families");
-    for (size_t i = 0; i < n; i++)
-    {
-        
-    }*/
     
 }
 
@@ -352,11 +451,6 @@ int main(int argc, char* argv[])
     
     //sort cells
 
-    /*struct Cell *grid;
-    size_t s_grid;
-    struct Cell *words;
-    size_t s_words;
-    sort_by_families(cells, (size_t) n, &grid, &s_grid, &words, &s_words);*/
 
     struct Same_family **families;
     sort_by_families(cells, (size_t) n, &families);
@@ -478,14 +572,13 @@ int main(int argc, char* argv[])
         }
     }
  
-
+    //
 
 
     
 
       
     //save letters into images
-    printf("debut\n");
     int offset = 0;
     for (int i = 0; i < n; i++)
     {
@@ -506,12 +599,18 @@ int main(int argc, char* argv[])
 
             char filename[64];
             if (c.family == 1)
-                snprintf(filename, sizeof(filename), "grid/letter_%d.png", c.label-offset);
+                {
+                    printf("grid/letter_%i x_min : %i y_min : %i\n", c.label-offset, c.x_min, c.y_min);
+                    snprintf(filename, sizeof(filename), "grid/letter_%i.png", c.label-offset);
+                }
             else
-                snprintf(filename, sizeof(filename), "letters/word_%i_letter_%d.png", c.family - 2, c.label-offset);
+                {
+                    printf("letters/word_%i_letter_%i x_min : %i y_min : %i\n", c.family - 2, c.label-offset, c.x_min, c.y_min);
+                    snprintf(filename, sizeof(filename), "letters/word_%i_letter_%i.png", c.family - 2, c.label-offset);
+                }
 
             IMG_SavePNG(letter, filename);
-            printf(" → Sauvegardé dans %s\n", filename);
+            printf(" -> Saved in %s\n", filename);
 
             SDL_FreeSurface(letter);
         }
