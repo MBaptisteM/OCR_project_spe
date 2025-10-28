@@ -91,7 +91,29 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
     }
     //mergeSortCells(cells, 0, (size_t)label-1);
 
-    /*for (int i = 1; i < label; ++i) //sort with x_min
+    int i = 0;
+    while (i < label)
+    {
+        int y = cells[i].y_min;
+        int s = 0;
+        while (s+i < label && abs(y - cells[i+s].y_min) < 5)
+            s++;
+        
+        for (int j = i; j < s; j++)
+        {
+            struct Cell curr = cells[j];
+            int k = j - 1;
+
+            while (k >= 0 && cells[k].x_min > curr.x_min) 
+            {
+                cells[k + 1] = cells[k];
+                k--;
+            }
+            cells[k + 1] = curr;
+        }
+        i+= s;
+    }
+    /*for (int i = 1; i < label; i++) //sort by x_min
     {
         struct Cell curr = cells[i];
         int j = i - 1;
@@ -104,7 +126,7 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
         cells[j + 1] = curr;
     }
 
-    for (int i = 1; i < label; ++i) 
+    for (int i = 1; i < label; i++) 
     {
         struct Cell curr = cells[i];
         int j = i - 1;
@@ -389,6 +411,10 @@ char Add_next_element(struct family** all_families, struct Same_family **familie
     }
     return changed;
 }
+/*double medianeDistance(struct family** all_families)
+{
+    return 0;
+}*/
 
 int main(int argc, char* argv[])
 {
