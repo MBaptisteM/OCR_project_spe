@@ -71,12 +71,12 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                 for (int i = 0; i < label-1; i++)
                 {
                     struct Cell *c = &cells[i];
-                    if (c->family != 'r' &&
+                    if (c->family != 2 &&
                             cells[label-1].x_min > c->x_min &&
                             cells[label-1].x_max < c->x_max &&
                             cells[label-1].y_min > c->y_min &&
                             cells[label-1].y_max < c->y_max)
-                        c->family = 'r';
+                        c->family = 2;
                 }
             }
         }
@@ -156,11 +156,13 @@ void sort_by_families(struct Cell* cells, size_t n, struct Same_family*** famili
 
 double distance(struct Center c1, struct Center c2)
 {
-    double dist = sqrt((c2.center_x - c1.center_x)*(c2.center_x - c1.center_x) + (c2.center_y - c1.center_y)*(c2.center_y - c1.center_y));
+    double dist_x = sqrt((c2.center_x - c1.center_x)*(c2.center_x - c1.center_x));
+    double dist_y = sqrt((c2.center_y - c1.center_y)*(c2.center_y - c1.center_y));
     double diff_x = (double)abs(c1.size_x - c2.size_x);
     double diff_y = (double)abs(c1.size_y - c2.size_y);
-    return dist*1.5 + diff_x*0.75 + diff_y*0.75;
+    return dist_x*2 + dist_y*2 + diff_x*0.75 + diff_y*0.5;
 }
+
 
 void merge(struct Same_family arr[], size_t l, size_t m, size_t r)
 {
@@ -214,6 +216,79 @@ void mergeSort(struct Same_family arr[], size_t l, size_t r)
         mergeSort(arr, m + 1, r);
         merge(arr, l, m, r);
     }
+}
+
+
+// do f1 and f2 contains the same elements ? -> 1 = true, 0 = false
+char Same_families(struct family f1, struct family f2){
+    if (f1.size != f2.size)
+	return 0;
+    for (size_t i = 0; i < f1.size; i++){
+	if (f1.tab[i].ind != f2.tab[i].ind)
+	    return 0;
+    }
+    return 1;
+}
+void Remove_same_families(struct family** all_families, int n){
+    for (size_t i = 0; i < n; i++){
+        size_t j = 0;
+        while (j < n && (*all_families)[i].completed != -1){
+            if ( i!= j && Same_families(((*all_families)[i]), (*all_families)[j]))
+                (*all_families)[i].completed = -1;
+            j++;
+        }
+    }
+}
+
+double Max_possible_dist(struct family f){
+    double coef = 2;
+    return f.max_dist * (1 + coef/ f.size);
+}
+
+//unused but for a more specifit traitment of words
+double Max_possible_dist_two(struct family f){
+    double coef = -0.5;
+    return f.max_dist * (1 + coef/ f.size);
+}
+
+char contains(struct family f, int elt){
+    for (size_t i = 0; i < f.size; i++){
+	if (f.tab[i].ind == elt)
+	    return 1;
+    }
+    return 0;
+}
+
+char Add_next_element(struct family** all_families, struct Same_family **families, int n, char second_call){
+    char changed = 0;
+    for (size_t i = 0; i < n; i++){
+        struct family fam = (*all_families)[i];
+        if (fam.completed == 0){
+            changed = 1;
+            double min = -1;
+            size_t index = 0;
+            for (size_t j = 0; j < fam.size; j++){
+                while (fam.tab[j].actual < n - 1 && contains(fam, families[fam.tab[j].ind][fam.tab[j].actual].index))
+                    fam.tab[j].actual ++;
+                if (fam.tab[j].actual < n - 1 && (min == -1 || families[fam.tab[j].ind][fam.tab[j].actual].dist < min)){
+                    min = families[fam.tab[j].ind][fam.tab[j].actual].dist;
+                    index = families[fam.tab[j].ind][fam.tab[j].actual].index;
+                }
+            }
+            if (min == - 1 || (fam.max_dist != 0 && (second_call ? Max_possible_dist_two(fam) : Max_possible_dist(fam)) < min))
+                fam.completed = 1;
+            else{
+                struct fam_elt new = {0,index};
+                fam.tab[fam.size] = new;
+                fam.size ++;
+                if (min > fam.max_dist)
+                    fam.max_dist = min;		
+                
+            }
+            (*all_families)[i] = fam;
+        }
+    }
+    return changed;
 }
 
 int main(int argc, char* argv[])
@@ -286,33 +361,159 @@ int main(int argc, char* argv[])
     struct Same_family **families;
     sort_by_families(cells, (size_t) n, &families);
     
+    // ---------------------- Begining of Baptiste's code ----------------------
+    
+    //Initialize the families
+    struct family* all_families = calloc(n, sizeof(struct family));
+    for (size_t i = 0 ;i < n; i++){
+        struct family fam = {0,calloc(n, sizeof(struct fam_elt)),1,0};
+        struct fam_elt first = {0,i};
+        fam.tab[0] = first;
+        all_families[i] = fam;
+    }
+
+    //Add closests elements together
+    int iter = 0;
+    while (Add_next_element(&all_families, families, n, 0)){
+        //only for the three first because too slow
+        if (iter < 3){
+            iter++;
+            Remove_same_families(&all_families, n);
+        }
+    }
+
+    //Define what are the spies elements (grid and elements containing other elements)
+    int* to_remove = calloc(n,sizeof(int));
+    size_t sizeRemove = 0;
+    for (size_t i = 0; i < n; i++){
+        if (cells[i].family == 2){
+            to_remove[sizeRemove] = i;
+            sizeRemove++;
+        }
+    }
+    
+    //Order 66 (use the spies as traitors) (you can only trust yoursefl and other letters bastards)
+    for (size_t i = 0; i < n; i++){
+        size_t k = 0;
+        
+        while (k < sizeRemove && all_families[i].completed != -1){
+            if (contains(all_families[i], to_remove[k]))
+                all_families[i].completed = -1;
+            k++;
+        }
+            
+    }
+
+    Remove_same_families(&all_families, n);
+
+    //Define the biggest family
+    size_t max_ind = 0;
+    size_t max_size = 0;
+    for (size_t i = 0; i < n; i ++){
+        if (all_families[i].completed != -1 && all_families[i].size > max_size){
+            max_size = all_families[i].size;
+            max_ind = i;
+        }
+    }
+
+    //Remove every cells that are inside of the gid
+    all_families[max_ind].completed = -1;
+    for (size_t i = 0; i < all_families[max_ind].size; i++ ){
+        cells[all_families[max_ind].tab[i].ind].family = 1;
+    }
+
+
+
+
+    
+    //to make the selection more specific
+    /*
+    size_t new_size = 0;
+    for (size_t i = 0 ;i < n; i++){
+        if (cells[i].family == 0)
+            new_size ++;
+    }
+
+    all_families = calloc(new_size, sizeof(struct family));
+    for (size_t i = 0 ;i < n; i++){
+        if (cells[i].family == 0){
+            struct family fam = {0,calloc(n, sizeof(struct fam_elt)),1,0};
+            struct fam_elt first = {0,i};
+            fam.tab[0] = first;
+            all_families[i] = fam;
+        }
+    }
+
+    iter = 0;
+    while (Add_next_element(&all_families, families, n, 1)){
+        //only for the three first because too slow
+        if (iter < 3){
+            iter++;
+            Remove_same_families(&all_families, n);
+        }
+    }   
+    Remove_same_families(&all_families, n);
+    */
+
+
+
+    //Remove every families that contains an element of the grid
+    for (size_t i = 0; i < n; i++ ){
+        size_t j = 0;
+        while (j < all_families[i].size && all_families[i].completed != -1){
+            if (cells[all_families[i].tab[j].ind].family == 1)
+                all_families[i].completed = -1;
+            j++;
+        }
+    }
+
+    //Group the elements by family
+    int k = 3;
+    for (size_t i = 0; i < n; i ++){
+        if (all_families[i].completed != -1){
+            for (size_t j = 0; j < all_families[i].size; j++ ){
+                cells[all_families[i].tab[j].ind].family = k;
+            }
+            k++;
+        }
+    }
+ 
+
+
+
+    
+
+      
     //save letters into images
     printf("debut\n");
     int offset = 0;
     for (int i = 0; i < n; i++)
     {
         struct Cell c = cells[i];
-        if (c.family != 'r')
+        if (c.family != 2)
         {
-        printf("cell : %i\n", i);
-        int width = c.x_max - c.x_min + 1;
-        int height = c.y_max - c.y_min + 1;
+            printf("cell : %i\n", i);
+            int width = c.x_max - c.x_min + 1;
+            int height = c.y_max - c.y_min + 1;
 
-        SDL_Rect srcRect = { c.x_min, c.y_min, width, height };
+            SDL_Rect srcRect = { c.x_min, c.y_min, width, height };
 
-        SDL_Surface *letter = SDL_CreateRGBSurfaceWithFormat(0, width, height, img->format->BitsPerPixel, SDL_PIXELFORMAT_RGBA8888);
-        if (letter == NULL)
-            errx(EXIT_FAILURE, "fail letter");
-            
-        SDL_BlitSurface(img, &srcRect, letter, NULL); //copy letter in surface
+            SDL_Surface *letter = SDL_CreateRGBSurfaceWithFormat(0, width, height, img->format->BitsPerPixel, SDL_PIXELFORMAT_RGBA8888);
+            if (letter == NULL)
+                errx(EXIT_FAILURE, "fail letter");
+                
+            SDL_BlitSurface(img, &srcRect, letter, NULL); //copy letter in surface
 
-        char filename[64];
-        snprintf(filename, sizeof(filename), "letters/letter_%d.png", c.label-offset);
+            char filename[64];
+            if (c.family == 1)
+                snprintf(filename, sizeof(filename), "grid/letter_%d.png", c.label-offset);
+            else
+                snprintf(filename, sizeof(filename), "letters/word_%i_letter_%d.png", c.family - 2, c.label-offset);
 
-        IMG_SavePNG(letter, filename);
-        printf(" → Sauvegardé dans %s\n", filename);
+            IMG_SavePNG(letter, filename);
+            printf(" → Sauvegardé dans %s\n", filename);
 
-        SDL_FreeSurface(letter);
+            SDL_FreeSurface(letter);
         }
         else
             offset++;

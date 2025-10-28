@@ -1,13 +1,10 @@
-CC = gcc
-CFLAGS = ocr `sdl2-config --cflags --libs` -lSDL2_image -Wall -Wextra
-TARGET = get_letters
-SRCS = get_letters.c
-OBJS = $(SRCS:.c=.o)
-all: $(TARGET)
-$(TARGET): $(OBJS)
-	$(CC) $^ -o $(CFLAGS) -lm
+get_letters : get_letters.o
+	gcc get_letters.o -o ocr `sdl2-config --cflags --libs` -lSDL2_image -Wall -Wextra -lm
+
+get_letters.o : get_letters.c
+	gcc -c get_letters.c
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f get_letters.o
 	rm -f ocr
 .PHONY: all clean
