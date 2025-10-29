@@ -15,10 +15,6 @@ struct Cell
     int y_max;
 };
 
-struct XY{
-    int x;
-    int y;
-};
 
 
 struct Center
@@ -50,7 +46,7 @@ struct family
 	char completed; // 0 if not completed, 1 if completed, -1 if deleted
 };
 
-struct XY* dfs(unsigned char **img, int **labels, int w, int h, int x, int y, int label, struct Cell *cell, size_t* size, int black_TH);
+void dfs(unsigned char **img, int **labels, int w, int h, int x, int y, int label, struct Cell *cell, int black_TH);
 int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell **out);
 
 void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families_sorted, struct Center **c);

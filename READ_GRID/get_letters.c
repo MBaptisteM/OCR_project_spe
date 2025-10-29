@@ -1,26 +1,18 @@
 #include "get_letters.h"
 #define BLACK_THRESHOLD 160 //under 120 we assume it's a dark gray pixel
 
-struct XY* dfs(unsigned char **img, int **labels, int w, int h, int x, int y, int label, struct Cell *cell, size_t* size, int black_TH)
+void dfs(unsigned char **img, int **labels, int w, int h, int x, int y, int label, struct Cell *cell, int black_TH)
 {
     //end of recursion
     if (x < 0 || x >= w || y < 0|| y >= h){
-        struct XY* tab = calloc(1000, sizeof(struct XY));
-        *size = 0;
-        return tab;
+        return;
     }
         
     if (img[y][x] >= black_TH){
-        struct XY xy = {x,y};
-        struct XY* tab = calloc(1000, sizeof(struct XY));
-        tab[0] = xy;
-        *size = 1;
-        return tab;
+        return;
     }
     if (labels[y][x] != 0){
-        struct XY* tab = calloc(1000, sizeof(struct XY));
-        *size = 0;
-        return tab;
+        return;
     }
     
     //change info of the cell
@@ -37,28 +29,12 @@ struct XY* dfs(unsigned char **img, int **labels, int w, int h, int x, int y, in
         cell->y_max = y;
 
     //check if pixels around are part of our cell
-    int max = 0;
-    struct XY* to_return = calloc(1000, sizeof(struct XY));
-    struct XY nul1 = {-1, -1};
-    to_return[0] = nul1;
-    size_t n = 0;
 
     int edit[] = {1,0, -1,0, 0,1, 0,-1, 1,1, -1,1, 1,-1, -1,-1};
     for (size_t i = 0; i < 16; i+=2){
-        struct XY* xy = dfs(img, labels, w, h, x + edit[i], y + edit[i + 1], label, cell, size, black_TH);
-        for (size_t k = 0; k < *size; k++){
-            max = img[xy[k].y][xy[k].x];
-            to_return[n] = xy[k];
-
-            n ++;
-            struct XY nul = {-1, -1};
-            to_return[n] = nul;
-
-            k++;
-        }
+        dfs(img, labels, w, h, x + edit[i], y + edit[i + 1], label, cell, black_TH);
     }
-    *size = n;
-    return to_return;
+    return;
 }
 
 int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell **out)
@@ -92,9 +68,8 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                 cells[label-1].y_min = y;
                 cells[label-1].y_max = y;
 
-                size_t size = 0;
                 //cells[label-1].area = 0;
-                struct XY* tab = dfs(img, labels, w, h, x, y, label, &cells[label-1], &size, black_TH);
+                dfs(img, labels, w, h, x, y, label, &cells[label-1], black_TH);
                 
                 /*
                 size_t i = 0;
@@ -138,22 +113,105 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                 {
                     label--;
                 }
-                else if ((double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 1.5){
-                    printf("x = %i, y = %i\n",(cells[label - 1].x_max - cells[label - 1].x_min + 1), (cells[label - 1].y_max - cells[label - 1].y_min + 1));
+                else if ((cells[label - 1].y_max - cells[label - 1].y_min + 1) >= 15 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 2){
                     int white_min = -1;
                     size_t x_final = 0;
-                    size_t start = cells[label - 1].x_min + (cells[label - 1].x_max - cells[label - 1].x_min + 1) / 2 - 2;
-                    for (size_t x = start; x <= start + 2; x++){
+                    int white_min2 = -1;
+                    size_t x_final2 = 0;
+                    for (size_t x = cells[label - 1].x_min; x < cells[label - 1].x_max; x++){
                         double sum = 0;
                         for (size_t y = cells[label - 1].y_min; y <= cells[label - 1].y_max; y++){
                             sum += img[y][x];
                         }
+                        if (white_min == -1 || sum > white_min){
+                            white_min2 = white_min;
+                            x_final2 = x_final;
+
+                            white_min = sum;
+                            x_final = x;
+                            x+=1;
+                        }
+                    }
+
+
+ 
+                    if (white_min2 != -1){
+                        label++;
+                        if (label >= alloc_size)
+                        {
+                            alloc_size *=2;
+                            cells = realloc(cells, alloc_size*sizeof(struct Cell));
+                            if (cells == NULL)
+                                errx(EXIT_FAILURE, "fail realloc cells");
+                        }
+
+                        cells[label-1].label = label;
+                        cells[label-1].x_min = x_final2 + 1;
+                        cells[label-1].x_max = x_final;
+                        cells[label-1].y_min = cells[label - 2].y_min;
+                        cells[label-1].y_max = cells[label - 2].y_max;
+
+                        for (size_t x = cells[label-1].x_min; x < cells[label-1].x_max; x++){
+                            for (size_t y = cells[label-1].y_min; y < cells[label-1].y_max; y++){
+                                if (labels[y][x] == label - 1)
+                                    labels[y][x] = label;
+                            }
+                        }
+
+                        label++;
+                        if (label >= alloc_size)
+                        {
+                            alloc_size *=2;
+                            cells = realloc(cells, alloc_size*sizeof(struct Cell));
+                            if (cells == NULL)
+                                errx(EXIT_FAILURE, "fail realloc cells");
+                        }
+
+                        cells[label-1].label = label;
+                        cells[label-1].x_min = x_final + 1;
+                        cells[label-1].x_max = cells[label - 3].x_max;
+                        cells[label-1].y_min = cells[label - 2].y_min;
+                        cells[label-1].y_max = cells[label - 2].y_max;
+
+                        for (size_t x = cells[label-1].x_min; x < cells[label-1].x_max; x++){
+                            for (size_t y = cells[label-1].y_min; y < cells[label-1].y_max; y++){
+                                if (labels[y][x] == label - 1)
+                                    labels[y][x] = label;
+                            }
+                        }
+
+                        if (cells[label-2].y_max - cells[label-2].y_min < 10)
+                        {
+                            label--;
+                        }
+
+                        cells[label-3].x_max = x_final2;
+
+                        if (cells[label-3].y_max - cells[label-3].y_min < 10)
+                        {
+                            label--;
+                        }
+                    }
+                    if (cells[label-1].y_max - cells[label-1].y_min < 10)
+                    {
+                        label--;
+                    }
+                }
+                else if ((cells[label - 1].x_max - cells[label - 1].x_min + 1) > 10 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 1.5){
+                    int white_min = -1;
+                    size_t x_final = 0;
+                    size_t diff = cells[label - 1].x_max - cells[label - 1].x_min + 1 ;
+                    for (size_t x = cells[label - 1].x_min + diff / 3 + 2; x <= cells[label - 1].x_max - diff / 3 - 2; x++){
+                        double sum = 0;
+                        for (size_t y = cells[label - 1].y_min + 2; y <= cells[label - 1].y_max - 2; y++){
+                            sum += abs(255 - img[y][x]);
+                        }
+                        sum *= 1 + abs(x - cells[label - 1].x_min - (cells[label - 1].x_max - cells[label - 1].x_min + 1)) / 2;
                         if (white_min == -1 || sum < white_min){
                             white_min = sum;
                             x_final = x;
                         }
                     }
-                    printf("xm = %i, xM = %i, x final = %zu\n",cells[label - 1].x_min, cells[label - 1].x_max,x_final);
 
                     
                     if (white_min != -1){
@@ -191,21 +249,7 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                     if (cells[label-1].y_max - cells[label-1].y_min < 10)
                     {
                         label--;
-                    }
-                    /*
-                    int black_max = 0;
-                    for (size_t x = cells[label - 1].x_min; x <= cells[label - 1].x_max; x++){
-                        for (size_t y = cells[label - 1].y_min; y <= cells[label - 1].y_max; y++){
-                            if (img[y][x] < black_TH && img[y][x] > black_max)
-                                black_max = img[y][x];
-                            labels[y][x] = 0;
-                        }
-                    }
-
-                    black_TH = black_max;
-                    label --;
-                    x--;   
-                    */              
+                    }          
 
                 }
                 else{
@@ -373,7 +417,7 @@ void mergeSort(struct Dist_with arr[], size_t l, size_t r)
         merge(arr, l, m, r);
     }
 }
-
+/*
 void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center **centers)
 {
     
@@ -427,6 +471,7 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center **cente
 
     free(with_origin);
 }
+    */
 
 // do f1 and f2 contains the same elements ? -> 1 = true, 0 = false
 char Same_families(struct family f1, struct family f2){
@@ -596,7 +641,7 @@ int main(int argc, char* argv[])
 
     //Remove elements that are too far from the mediane distance
 
-    Remove_too_far_mediane(&cells, (size_t)n, &centers);
+    //Remove_too_far_mediane(&cells, (size_t)n, &centers);
 
     //Define what are the spies elements (grid and elements containing other elements)
     int* to_remove = calloc(n,sizeof(int));
