@@ -29,7 +29,7 @@ struct Center
     int size_y;
 };
 
-struct Same_family
+struct Dist_with
 {
     double dist;
     size_t index;
@@ -53,12 +53,13 @@ struct family
 struct XY* dfs(unsigned char **img, int **labels, int w, int h, int x, int y, int label, struct Cell *cell, size_t* size, int black_TH);
 int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell **out);
 
-void sort_by_families(struct Cell* cells, size_t n, struct Same_family*** families_sorted);
+void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families_sorted, struct Center **c);
 double distance(struct Center c1, struct Center c2);
-void merge(struct Same_family arr[], size_t l, size_t m, size_t r);
-void mergeSort(struct Same_family arr[], size_t l, size_t r);
+void merge(struct Dist_with arr[], size_t l, size_t m, size_t r);
+void mergeSort(struct Dist_with arr[], size_t l, size_t r);
+void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center **centers);
 char Same_families(struct family f1, struct family f2);
 double Max_possible_dist(struct family f);
 double Max_possible_dist_two(struct family f);
 char contains(struct family f, int elt);
-char Add_next_element(struct family** all_families, struct Same_family **families, int n, char second_call);
+char Add_next_element(struct family** all_families, struct Dist_with **families, int n, char second_call);

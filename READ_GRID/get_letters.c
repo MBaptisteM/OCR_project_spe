@@ -261,9 +261,11 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
 }
 
 
-void sort_by_families(struct Cell* cells, size_t n, struct Same_family*** families_sorted)
+void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families_sorted, struct Center **c)
 {
-    struct Center centers[n];
+    struct Center *centers = calloc(n, sizeof(struct Center));
+    if (centers == NULL)
+        errx(EXIT_FAILURE, "fail calloc centers");
     for (size_t i = 0; i < n; i++)
     {
         centers[i].center_x = (cells[i].x_min + cells[i].x_max) /2;
@@ -274,12 +276,12 @@ void sort_by_families(struct Cell* cells, size_t n, struct Same_family*** famili
 
     //array with distance between all centers
     
-    struct Same_family **distances = calloc(n, sizeof(struct Same_family*));
+    struct Dist_with **distances = calloc(n, sizeof(struct Dist_with*));
     if (distances == NULL)
         errx(EXIT_FAILURE, "fail in calloc distances");
     for (size_t i = 0; i < n; i++)
     {
-        struct Same_family *tab = calloc(n-1, sizeof(struct Same_family));
+        struct Dist_with *tab = calloc(n-1, sizeof(struct Dist_with));
         if (tab == NULL)
             errx(EXIT_FAILURE, "fail calloc distances[i]");
         char offset = 0;
@@ -304,9 +306,8 @@ void sort_by_families(struct Cell* cells, size_t n, struct Same_family*** famili
             printf("i = %zu j = %zu dist = %f index = %zu\n", i, j,  distances[i][j].dist,  distances[i][j].index);
         }
     }*/
-
+    *c = centers;
     *families_sorted  = distances;
-    
 }
 
 double distance(struct Center c1, struct Center c2)
@@ -319,14 +320,14 @@ double distance(struct Center c1, struct Center c2)
 }
 
 
-void merge(struct Same_family arr[], size_t l, size_t m, size_t r)
+void merge(struct Dist_with arr[], size_t l, size_t m, size_t r)
 {
     
     size_t i, j, k;
     size_t n1 = m - l + 1;
     size_t n2 = r - m;
 
-    struct Same_family L[n1], R[n2];
+    struct Dist_with L[n1], R[n2];
     for (i = 0; i < n1; i++)
         L[i] = arr[l + i];
     for (j = 0; j < n2; j++)
@@ -361,7 +362,7 @@ void merge(struct Same_family arr[], size_t l, size_t m, size_t r)
     }
 }
 
-void mergeSort(struct Same_family arr[], size_t l, size_t r)
+void mergeSort(struct Dist_with arr[], size_t l, size_t r)
 {
     
     if (l < r) 
@@ -373,6 +374,59 @@ void mergeSort(struct Same_family arr[], size_t l, size_t r)
     }
 }
 
+void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center **centers)
+{
+    
+    struct Center origin = {0, 0, 0, 0};
+    struct Dist_with *with_origin = calloc(n, sizeof(struct Dist_with));
+    if (with_origin == NULL)
+        errx(EXIT_FAILURE, "fail calloc distance with origin");
+    printf("n : %zu\n", n);
+    for (size_t i = 0; i < n; i++)
+    {
+        struct Center c = *centers[i];
+        printf("x : %i y:%i sx : %i sy : %i\n", c.center_x, c.center_y, c.size_x, c.size_y);
+    }
+    for (size_t i = 0; i < n; i++)
+    {
+        printf("i : %zu \n", i);
+        with_origin[i].dist = distance(origin, *centers[i]);
+        with_origin[i].index = i;
+    }
+    
+    //sort by distances
+    for (size_t i = 1; i < n; i++) 
+    {
+        struct Dist_with curr = with_origin[i];
+        size_t j = i - 1;
+
+        while (j >= 0 && with_origin[j].dist > curr.dist) 
+        {
+            with_origin[j + 1] = with_origin[j];
+            j = j - 1;
+        }
+        with_origin[j + 1] = curr;
+    }
+    printf("passe\n");
+    //find the mediane
+    size_t mid = n/2;
+    if (n%2 == 0)
+        mid--;
+    
+    double mediane = with_origin[mid].dist;
+    double coeff = 0.5;
+    for (size_t i = 0; i < n; i++)
+    {
+        if (with_origin[i].dist < mediane * (1 - coeff) || //if too far from mediane
+        with_origin[i].dist > mediane * (1 + coeff))
+        {
+            cells[with_origin[i].index]->family = 2;
+        }
+            
+    }
+
+    free(with_origin);
+}
 
 // do f1 and f2 contains the same elements ? -> 1 = true, 0 = false
 char Same_families(struct family f1, struct family f2){
@@ -418,7 +472,7 @@ char contains(struct family f, int elt){
     return 0;
 }
 
-char Add_next_element(struct family** all_families, struct Same_family **families, int n, char second_call){
+char Add_next_element(struct family** all_families, struct Dist_with **families, int n, char second_call){
     char changed = 0;
     for (size_t i = 0; i < n; i++){
         struct family fam = (*all_families)[i];
@@ -515,9 +569,9 @@ int main(int argc, char* argv[])
     
     //sort cells
 
-
-    struct Same_family **families;
-    sort_by_families(cells, (size_t) n, &families);
+    struct Center *centers;
+    struct Dist_with **families;
+    sort_by_families(cells, (size_t) n, &families, &centers);
     
     // ---------------------- Begining of Baptiste's code ----------------------
     
@@ -539,6 +593,10 @@ int main(int argc, char* argv[])
             Remove_same_families(&all_families, n);
         }
     }
+
+    //Remove elements that are too far from the mediane distance
+
+    Remove_too_far_mediane(&cells, (size_t)n, &centers);
 
     //Define what are the spies elements (grid and elements containing other elements)
     int* to_remove = calloc(n,sizeof(int));
@@ -646,10 +704,6 @@ int main(int argc, char* argv[])
  
     //
 
-
-    
-
-      
     //clear the folders
     system("rm -r grid");
     system("rm -r letters");
