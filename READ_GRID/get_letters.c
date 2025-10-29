@@ -417,24 +417,18 @@ void mergeSort(struct Dist_with arr[], size_t l, size_t r)
         merge(arr, l, m, r);
     }
 }
-/*
-void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center **centers)
+/**/
+void Remove_too_far_mediane(struct Cell* cells, size_t n, struct Center *centers)
 {
     
     struct Center origin = {0, 0, 0, 0};
     struct Dist_with *with_origin = calloc(n, sizeof(struct Dist_with));
     if (with_origin == NULL)
         errx(EXIT_FAILURE, "fail calloc distance with origin");
-    printf("n : %zu\n", n);
+
     for (size_t i = 0; i < n; i++)
     {
-        struct Center c = *centers[i];
-        printf("x : %i y:%i sx : %i sy : %i\n", c.center_x, c.center_y, c.size_x, c.size_y);
-    }
-    for (size_t i = 0; i < n; i++)
-    {
-        printf("i : %zu \n", i);
-        with_origin[i].dist = distance(origin, *centers[i]);
+        with_origin[i].dist = distance(origin, centers[i]);
         with_origin[i].index = i;
     }
     
@@ -451,27 +445,27 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center **cente
         }
         with_origin[j + 1] = curr;
     }
-    printf("passe\n");
+    
     //find the mediane
     size_t mid = n/2;
     if (n%2 == 0)
         mid--;
-    
     double mediane = with_origin[mid].dist;
-    double coeff = 0.5;
+
+    double coeff = 0.8;
     for (size_t i = 0; i < n; i++)
     {
         if (with_origin[i].dist < mediane * (1 - coeff) || //if too far from mediane
         with_origin[i].dist > mediane * (1 + coeff))
         {
-            cells[with_origin[i].index]->family = 2;
-        }
-            
+            //printf("i : %zu\n", i);
+            cells[with_origin[i].index].family = 2;
+        }  
     }
 
     free(with_origin);
 }
-    */
+    
 
 // do f1 and f2 contains the same elements ? -> 1 = true, 0 = false
 char Same_families(struct family f1, struct family f2){
@@ -641,7 +635,7 @@ int main(int argc, char* argv[])
 
     //Remove elements that are too far from the mediane distance
 
-    //Remove_too_far_mediane(&cells, (size_t)n, &centers);
+    Remove_too_far_mediane(cells, (size_t)n, centers);
 
     //Define what are the spies elements (grid and elements containing other elements)
     int* to_remove = calloc(n,sizeof(int));

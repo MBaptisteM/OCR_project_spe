@@ -53,7 +53,7 @@ void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families
 double distance(struct Center c1, struct Center c2);
 void merge(struct Dist_with arr[], size_t l, size_t m, size_t r);
 void mergeSort(struct Dist_with arr[], size_t l, size_t r);
-void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center **centers);
+void Remove_too_far_mediane(struct Cell* cells, size_t n, struct Center *centers);
 char Same_families(struct family f1, struct family f2);
 double Max_possible_dist(struct family f);
 double Max_possible_dist_two(struct family f);
