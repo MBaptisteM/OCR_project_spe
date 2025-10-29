@@ -227,7 +227,6 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
             }
         }
     }
-    //mergeSortCells(cells, 0, (size_t)label-1);
     
     int i = 0;
     while (i < label)
@@ -260,60 +259,7 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
     *out = cells;
     return label;
 }
-void mergeCells(struct Cell arr[], size_t l, size_t m, size_t r)
-{
-    
-    size_t i, j, k;
-    size_t n1 = m - l + 1;
-    size_t n2 = r - m;
 
-    struct Cell L[n1], R[n2];
-    for (i = 0; i < n1; i++)
-        L[i] = arr[l + i];
-    for (j = 0; j < n2; j++)
-        R[j] = arr[m + 1 + j];
-    i = 0;
-    j = 0;
-    k = l;
-    while (i < n1 && j < n2) 
-    {
-        if (L[i].y_min <= R[j].y_min + 5 && L[i].y_min >= R[j].y_min - 5)
-        {
-            arr[k] = L[i];
-            i++;
-        }
-        else 
-        {
-            arr[k] = R[j];
-            j++;
-        }
-        k++;
-    }
-    while (i < n1) 
-    {
-        arr[k] = L[i];
-        i++;
-        k++;
-    }
-
-    while (j < n2) 
-    {
-        arr[k] = R[j];
-        j++;
-        k++;
-    }
-}
-
-void mergeSortCells(struct Cell arr[], size_t l, size_t r)
-{
-    if (l < r) 
-    {
-        size_t m = l + (r - l) / 2;
-        mergeSortCells(arr, l, m);
-        mergeSortCells(arr, m + 1, r);
-        mergeCells(arr, l, m, r);
-    }
-}
 
 void sort_by_families(struct Cell* cells, size_t n, struct Same_family*** families_sorted)
 {
@@ -369,7 +315,7 @@ double distance(struct Center c1, struct Center c2)
     double dist_y = sqrt((c2.center_y - c1.center_y)*(c2.center_y - c1.center_y));
     double diff_x = (double)abs(c1.size_x - c2.size_x);
     double diff_y = (double)abs(c1.size_y - c2.size_y);
-    return dist_x*2 + dist_y*2 + diff_x*0.5 + diff_y*0.75;
+    return dist_x*2 + dist_y*2 + diff_x*0.5 + diff_y*0.5;
 }
 
 
@@ -454,7 +400,7 @@ void Remove_same_families(struct family** all_families, int n){
 }
 
 double Max_possible_dist(struct family f){
-    double coef = 0;
+    double coef = 1.6;
     return f.max_dist * (1 + coef/ f.size);
 }
 

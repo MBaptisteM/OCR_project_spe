@@ -52,8 +52,6 @@ struct family
 
 struct XY* dfs(unsigned char **img, int **labels, int w, int h, int x, int y, int label, struct Cell *cell, size_t* size, int black_TH);
 int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell **out);
-void mergeCells(struct Cell arr[], size_t l, size_t m, size_t r);
-void mergeSortCells(struct Cell arr[], size_t l, size_t r);
 
 void sort_by_families(struct Cell* cells, size_t n, struct Same_family*** families_sorted);
 double distance(struct Center c1, struct Center c2);
