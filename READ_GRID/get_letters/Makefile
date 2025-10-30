@@ -7,4 +7,5 @@ get_letters.o : main.c get_letters.c
 clean:
 	rm -f get_letters.o
 	rm -f ocr
+	rm -r main.o
 .PHONY: all clean

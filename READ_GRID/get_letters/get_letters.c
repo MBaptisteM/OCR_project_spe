@@ -113,7 +113,6 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                     label--;
                 }
                 else if ((cells[label - 1].y_max - cells[label - 1].y_min + 1) >= 15 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 2.17){
-                    printf("passe\n");
                     int white_min = -1;
                     size_t x_final = 0;
                     int white_min2 = -1;
@@ -200,7 +199,6 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
 
                 }
                 else if ((cells[label - 1].x_max - cells[label - 1].x_min + 1) > 10 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 1.5){
-                    printf("passe2\n");
                     int white_min = -1;
                     size_t x_final = 0;
                     size_t diff = cells[label - 1].x_max - cells[label - 1].x_min + 1 ;
@@ -648,14 +646,10 @@ void Remove_same_families(struct family** all_families, int n){
     }
 }
 
-double Max_possible_dist(struct family f){
+double Max_possible_dist(struct family f, char second_call){
     double coef = 1.7;
-    return f.max_dist * (1 + coef/ f.size);
-}
-
-//unused but for a more specifit traitment of words
-double Max_possible_dist_two(struct family f){
-    double coef = 2;
+    if (second_call)
+        coef = 1.7;
     return f.max_dist * (1 + coef/ f.size);
 }
 
@@ -667,7 +661,7 @@ char contains(struct family f, int elt){
     return 0;
 }
 
-char Add_next_element(struct family** all_families, struct Dist_with **families, int n, char second_call){
+char Add_next_element(struct family** all_families, struct Dist_with **families, int n, char second_call, struct Cell* cells){
     char changed = 0;
     for (size_t i = 0; i < n; i++){
         struct family fam = (*all_families)[i];
@@ -675,15 +669,15 @@ char Add_next_element(struct family** all_families, struct Dist_with **families,
             changed = 1;
             double min = -1;
             size_t index = 0;
-            for (size_t j = 0; j < fam.size; j++){
-                while (fam.tab[j].actual < n - 1 && contains(fam, families[fam.tab[j].ind][fam.tab[j].actual].index))
+            for (size_t j = 0; j < fam.size; j++){ 
+                while (fam.tab[j].actual < n - 1 && contains(fam, families[fam.tab[j].ind][fam.tab[j].actual].index) && (second_call == 0 || (cells[fam.tab[j].ind].family != 1 && cells[fam.tab[j].ind].family != 2)))
                     fam.tab[j].actual ++;
                 if (fam.tab[j].actual < n - 1 && (min == -1 || families[fam.tab[j].ind][fam.tab[j].actual].dist < min)){
                     min = families[fam.tab[j].ind][fam.tab[j].actual].dist;
                     index = families[fam.tab[j].ind][fam.tab[j].actual].index;
                 }
             }
-            if (min == - 1 || (fam.max_dist != 0 && min > (second_call ? Max_possible_dist_two(fam) : Max_possible_dist(fam))))
+            if (min == - 1 || (fam.max_dist != 0 && min > Max_possible_dist(fam, second_call)))
                 fam.completed = 1;
             else{
                 struct fam_elt new = {0,index};
@@ -702,4 +696,3 @@ char Add_next_element(struct family** all_families, struct Dist_with **families,
 {
     return 0;
 }*/
-

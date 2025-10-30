@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 
     //Add closests elements together
     int iter = 0;
-    while (Add_next_element(&all_families, families, n, 0)){
+    while (Add_next_element(&all_families, families, n, 0, cells)){
         //only for the three first because too slow
         if (iter < 3){
             iter++;
@@ -134,43 +134,6 @@ int main(int argc, char* argv[])
     }
 
 
-
-
-
-    
-    //to make the selection more specific
-    /*
-    size_t new_size = 0;
-    for (size_t i = 0 ;i < n; i++){
-        if (cells[i].family == 0)
-            new_size ++;
-    }
-
-    all_families = calloc(new_size, sizeof(struct family));
-    for (size_t i = 0 ;i < n; i++){
-        if (cells[i].family == 0){
-            struct family fam = {0,calloc(n, sizeof(struct fam_elt)),1,0};
-            struct fam_elt first = {0,i};
-            fam.tab[0] = first;
-            all_families[i] = fam;
-        }
-    }
-
-    iter = 0;
-    while (Add_next_element(&all_families, families, n, 1)){
-        //only for the three first because too slow
-        if (iter < 3){
-            iter++;
-            Remove_same_families(&all_families, n);
-        }
-    }   
-    Remove_same_families(&all_families, n);
-    */
-
-
-
-
-
     //Remove every families that contains an element of the grid
     for (size_t i = 0; i < n; i++ ){
         size_t j = 0;
@@ -195,15 +158,101 @@ int main(int argc, char* argv[])
     }
 
 
-
     for (size_t i = 0; i < n; i++){
         if (cells[i].family == 0)
             cells[i].family = 1;
     }
 
-
+    
     //Remove elements that are too far from the mediane distance
     Remove_too_far_mediane(&cells, (size_t)n, centers);
+
+
+
+    
+    //to make the selection more specific
+    /*
+    size_t new_size = 0;
+    for (size_t i = 0 ;i < n; i++){
+        if (cells[i].family != 1 && cells[i].family != 2){
+            new_size ++;
+            cells[i].family = 0;
+        }
+    }
+        */
+
+    struct family* all_families2 = calloc(n, sizeof(struct family));
+    for (size_t i = 0 ;i < n; i++){
+        if (cells[i].family != 1 && cells[i].family != 2){
+            struct family fam = {0,calloc(n, sizeof(struct fam_elt)),1,0};
+            struct fam_elt first = {0,i};
+            fam.tab[0] = first;
+            all_families2[i] = fam;
+        }
+    }
+
+
+    iter = 0;
+    while (Add_next_element(&all_families2, families, n, 0, cells)){
+        //only for the three first because too slow
+        if (iter < 3){
+            iter++;
+            Remove_same_families(&all_families2, n);
+        }
+    } 
+
+
+
+    Remove_same_families(&all_families2, n);
+
+
+    k = 3;
+    for (size_t i = 0; i < n; i ++){
+        if (all_families2[i].completed != -1){
+            for (size_t j = 0; j < all_families2[i].size; j++ ){
+                if (cells[all_families2[i].tab[j].ind].family != 2)
+                    cells[all_families2[i].tab[j].ind].family = k;
+            }
+            k++;
+        }
+    }
+
+
+    int actual = -1;
+    int tab[n];
+    int num = 0;for (size_t i = 0; i < n; i++){
+        tab[i] = 0;
+    }
+    for (size_t i = 0; i < n; i++){
+        if (cells[i].family != 1 && cells[i].family != 2)
+            tab[cells[i].family]++;
+    }
+    for (size_t i = 3; i < n; i++){
+        if (tab[i] < 3){
+            for (size_t j = 0; j < n; j++){
+                if (cells[j].family == i){
+                    cells[j].family = 2;
+                }
+            }
+        }
+    }
+
+
+    
+
+
+    
+
+
+
+
+    
+    
+
+
+
+
+
  
     //
 
@@ -213,6 +262,8 @@ int main(int argc, char* argv[])
     system("mkdir ../grid");
     system("mkdir ../letters");
 
+    
+
     //save letters into images
     int offset = 0;
     for (int i = 0; i < n; i++)
@@ -220,17 +271,21 @@ int main(int argc, char* argv[])
         struct Cell c = cells[i];
         if (c.family != 2)
         {
+            
             //printf("cell : %i\n", i);
             int width = c.x_max - c.x_min + 1;
             int height = c.y_max - c.y_min + 1;
 
-            SDL_Rect srcRect = { c.x_min, c.y_min, width, height };
+            SDL_Rect srcRect = { c.x_min, c.y_min, width, height};
+
 
             SDL_Surface *letter = SDL_CreateRGBSurfaceWithFormat(0, width, height, img->format->BitsPerPixel, SDL_PIXELFORMAT_RGBA8888);
             if (letter == NULL)
                 errx(EXIT_FAILURE, "fail letter");
+            
                 
             SDL_BlitSurface(img, &srcRect, letter, NULL); //copy letter in surface
+            
 
             char filename[64];
             if (c.family == 1)
@@ -248,6 +303,7 @@ int main(int argc, char* argv[])
             //printf(" -> Saved in %s\n", filename);
 
             SDL_FreeSurface(letter);
+            
         }
         else
             offset++;
@@ -259,7 +315,20 @@ int main(int argc, char* argv[])
         free(gray[y]);
         free(labels[y]);
     }
+    for (size_t i = 0; i < n; i++) {
+        free(families[i]);
+    }
+    for (size_t i = 0; i < n; i++) {
+        free(all_families[i].tab);
+    }
+    free(all_families);
+    for (size_t i = 0; i < n; i++) {
+        free(all_families2[i].tab);
+    }
+    free(all_families2);
 
+    free(families);
+    free(centers);
     free(gray);
     free(labels);
     free(cells);
