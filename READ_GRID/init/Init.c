@@ -1,7 +1,6 @@
 #include <math.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <SDL2/SDL2_rotozoom.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "Pixel.h"
@@ -163,7 +162,7 @@ int main(int argc, char *argv[]) {
 	SDL_FreeSurface(img);
 	img = converted;
 
-	binarize(img, 128);
+	binarize(img);
 	rotate_image(&img, atoi(argv[2]));
 
 	//IMG_SavePNG(img, "output.png");
