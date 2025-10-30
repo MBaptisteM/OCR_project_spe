@@ -49,8 +49,8 @@ struct family
 void dfs(unsigned char **img, int **labels, int w, int h, int x, int y, int label, struct Cell *cell, int black_TH);
 int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell **out);
 
-void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families_sorted, struct Center **c);
-double distance(struct Center c1, struct Center c2);
+void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families_sorted, struct Center **c, char second_call);
+double distance(struct Center c1, struct Center c2, char second_call);
 void merge(struct Dist_with arr[], size_t l, size_t m, size_t r);
 void mergeSort(struct Dist_with arr[], size_t l, size_t r);
 void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *centers);

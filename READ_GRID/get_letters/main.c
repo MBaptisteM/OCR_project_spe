@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
     //initialize the surface with the grid
 
     IMG_Init(IMG_INIT_PNG);
-    
+
     char stock[150];
     snprintf(stock, sizeof(stock), "../images/%s", argv[1]);
     SDL_Surface *img = IMG_Load(stock);
@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
 
     struct Center *centers;
     struct Dist_with **families;
-    sort_by_families(cells, (size_t) n, &families, &centers);
+    sort_by_families(cells, (size_t) n, &families, &centers, 0);
 
     
     //Initialize the families
@@ -192,11 +192,17 @@ int main(int argc, char* argv[])
             fam.tab[0] = first;
             all_families2[i] = fam;
         }
+        else{
+            struct family fam = {0,calloc(n, sizeof(struct fam_elt)),0,-1};
+            all_families2[i] = fam;
+        }
     }
+
+    sort_by_families(cells, (size_t) n, &families, &centers, 0);
 
 
     iter = 0;
-    while (Add_next_element(&all_families2, families, n, 0, cells)){
+    while (Add_next_element(&all_families2, families, n, 1, cells)){
         //only for the three first because too slow
         if (iter < 3){
             iter++;
@@ -212,18 +218,23 @@ int main(int argc, char* argv[])
     k = 3;
     for (size_t i = 0; i < n; i ++){
         if (all_families2[i].completed != -1){
+            int num = 0;
             for (size_t j = 0; j < all_families2[i].size; j++ ){
-                if (cells[all_families2[i].tab[j].ind].family != 2)
+                if (cells[all_families2[i].tab[j].ind].family != 2){
                     cells[all_families2[i].tab[j].ind].family = k;
+                    num ++;
+                }
             }
-            k++;
+            if (num != 0)
+                k++;
         }
     }
 
 
     int actual = -1;
     int tab[n];
-    int num = 0;for (size_t i = 0; i < n; i++){
+    int num = 0;
+    for (size_t i = 0; i < n; i++){
         tab[i] = 0;
     }
     for (size_t i = 0; i < n; i++){
@@ -237,6 +248,22 @@ int main(int argc, char* argv[])
                     cells[j].family = 2;
                 }
             }
+        }
+    }
+
+
+    k = 3;
+    for (size_t i = 0; i < n; i ++){
+        if (all_families2[i].completed != -1){
+            int num = 0;
+            for (size_t j = 0; j < all_families2[i].size; j++ ){
+                if (cells[all_families2[i].tab[j].ind].family != 2){
+                    cells[all_families2[i].tab[j].ind].family = k;
+                    num ++;
+                }
+            }
+            if (num != 0)
+                k++;
         }
     }
 

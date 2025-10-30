@@ -306,7 +306,7 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
 }
 
 
-void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families_sorted, struct Center **c)
+void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families_sorted, struct Center **c, char second_call)
 {
     struct Center *centers = calloc(n, sizeof(struct Center));
     if (centers == NULL)
@@ -334,7 +334,7 @@ void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families
         {
             if (j!= i)
             {
-                tab[j-offset].dist = distance(centers[i], centers[j]);
+                tab[j-offset].dist = distance(centers[i], centers[j],second_call);
                 tab[j-offset].index = j;
             }
             else
@@ -355,13 +355,23 @@ void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families
     *families_sorted  = distances;
 }
 
-double distance(struct Center c1, struct Center c2)
+double distance(struct Center c1, struct Center c2, char second_call)
 {
     double dist_x = sqrt((c2.center_x - c1.center_x)*(c2.center_x - c1.center_x));
     double dist_y = sqrt((c2.center_y - c1.center_y)*(c2.center_y - c1.center_y));
     double diff_x = (double)abs(c1.size_x - c2.size_x);
     double diff_y = (double)abs(c1.size_y - c2.size_y);
-    return dist_x*2 + dist_y*2 + diff_x*0.5 + diff_y*3;
+    if (second_call)
+        return dist_x*1 + dist_y*2 + diff_x*0.5 + diff_y*3;
+    else
+        return dist_x*2 + dist_y*2 + diff_x*0.5 + diff_y*3;
+}
+
+double Max_possible_dist(struct family f, char second_call){
+    double coef = 1.7;
+    if (second_call)
+        coef = 2.3;
+    return f.max_dist * (1 + coef/ f.size);
 }
 
 
@@ -646,13 +656,6 @@ void Remove_same_families(struct family** all_families, int n){
     }
 }
 
-double Max_possible_dist(struct family f, char second_call){
-    double coef = 1.7;
-    if (second_call)
-        coef = 1.7;
-    return f.max_dist * (1 + coef/ f.size);
-}
-
 char contains(struct family f, int elt){
     for (size_t i = 0; i < f.size; i++){
 	if (f.tab[i].ind == elt)
@@ -670,7 +673,9 @@ char Add_next_element(struct family** all_families, struct Dist_with **families,
             double min = -1;
             size_t index = 0;
             for (size_t j = 0; j < fam.size; j++){ 
-                while (fam.tab[j].actual < n - 1 && contains(fam, families[fam.tab[j].ind][fam.tab[j].actual].index) && (second_call == 0 || (cells[fam.tab[j].ind].family != 1 && cells[fam.tab[j].ind].family != 2)))
+                while (fam.tab[j].actual < n - 1 && (contains(fam, families[fam.tab[j].ind][fam.tab[j].actual].index) 
+                    || (second_call == 1 && (cells[families[fam.tab[j].ind][fam.tab[j].actual].index].family == 1 
+                    || cells[families[fam.tab[j].ind][fam.tab[j].actual].index].family == 2))))
                     fam.tab[j].actual ++;
                 if (fam.tab[j].actual < n - 1 && (min == -1 || families[fam.tab[j].ind][fam.tab[j].actual].dist < min)){
                     min = families[fam.tab[j].ind][fam.tab[j].actual].dist;
