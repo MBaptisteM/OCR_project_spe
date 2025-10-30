@@ -1,8 +1,8 @@
-init : Init.o Pixel.o
-	gcc Init.o Pixel.o -o init -std=c99 -Wall -Wextra `sdl2-config --cflags --libs` -lSDL2_image -lm
+init : Init.o Pixel.o main.o
+	gcc Init.o Pixel.o main.o -o init -std=c99 -Wall -Wextra `sdl2-config --cflags --libs` -lSDL2_image -lm
 
-Init.o : Init.c
-	gcc -c Init.c -std=c99 -Wall -Wextra
+Init.o : Init.c main.c
+	gcc -c Init.c main.c -std=c99 -Wall -Wextra
 
 Pixel.o : Pixel.c
 	gcc -c Pixel.c -std=c99 -Wall -Wextra
