@@ -107,20 +107,20 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                     i++;
                 }
                     */
-                
                 //remove the cell if too small
                 if (cells[label-1].y_max - cells[label-1].y_min < 10)
                 {
                     label--;
                 }
-                else if ((cells[label - 1].y_max - cells[label - 1].y_min + 1) >= 15 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 2){
+                else if ((cells[label - 1].y_max - cells[label - 1].y_min + 1) >= 15 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 2.17){
+                    printf("passe\n");
                     int white_min = -1;
                     size_t x_final = 0;
                     int white_min2 = -1;
                     size_t x_final2 = 0;
                     for (size_t x = cells[label - 1].x_min; x < cells[label - 1].x_max; x++){
                         double sum = 0;
-                        for (size_t y = cells[label - 1].y_min; y <= cells[label - 1].y_max; y++){
+                        for (size_t y = cells[label - 1].y_min + 2; y <= cells[label - 1].y_max - 2; y++){
                             sum += img[y][x];
                         }
                         if (white_min == -1 || sum > white_min){
@@ -191,13 +191,16 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                         {
                             label--;
                         }
+                        
                     }
                     if (cells[label-1].y_max - cells[label-1].y_min < 10)
                     {
                         label--;
                     }
+
                 }
                 else if ((cells[label - 1].x_max - cells[label - 1].x_min + 1) > 10 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 1.5){
+                    printf("passe2\n");
                     int white_min = -1;
                     size_t x_final = 0;
                     size_t diff = cells[label - 1].x_max - cells[label - 1].x_min + 1 ;
@@ -360,7 +363,7 @@ double distance(struct Center c1, struct Center c2)
     double dist_y = sqrt((c2.center_y - c1.center_y)*(c2.center_y - c1.center_y));
     double diff_x = (double)abs(c1.size_x - c2.size_x);
     double diff_y = (double)abs(c1.size_y - c2.size_y);
-    return dist_x*2 + dist_y*2 + diff_x*0.5 + diff_y*0.5;
+    return dist_x*2 + dist_y*2 + diff_x*0.5 + diff_y*3;
 }
 
 
@@ -417,53 +420,206 @@ void mergeSort(struct Dist_with arr[], size_t l, size_t r)
         merge(arr, l, m, r);
     }
 }
-/**/
-void Remove_too_far_mediane(struct Cell* cells, size_t n, struct Center *centers)
-{
-    
-    struct Center origin = {0, 0, 0, 0};
-    struct Dist_with *with_origin = calloc(n, sizeof(struct Dist_with));
-    if (with_origin == NULL)
-        errx(EXIT_FAILURE, "fail calloc distance with origin");
 
-    for (size_t i = 0; i < n; i++)
-    {
-        with_origin[i].dist = distance(origin, centers[i]);
-        with_origin[i].index = i;
-    }
-    
-    //sort by distances
-    for (size_t i = 1; i < n; i++) 
-    {
-        struct Dist_with curr = with_origin[i];
-        size_t j = i - 1;
 
-        while (j >= 0 && with_origin[j].dist > curr.dist) 
+void sort_heights(struct Dist_with **heights, size_t size){
+    for (size_t i = 1; i < size; i++) 
+    {
+        struct Dist_with curr = (*heights)[i];
+        long int j = i - 1;
+
+        while (j >= 0 && (*heights)[j].dist > curr.dist) 
         {
-            with_origin[j + 1] = with_origin[j];
+            (*heights)[j + 1] = (*heights)[j];
             j = j - 1;
         }
-        with_origin[j + 1] = curr;
+        (*heights)[j + 1] = curr;
     }
-    
-    //find the mediane
-    size_t mid = n/2;
-    if (n%2 == 0)
-        mid--;
-    double mediane = with_origin[mid].dist;
+}
 
-    double coeff = 0.8;
+void sort_y(int **tab, size_t size, struct Center *centers){
+    for (size_t i = 1; i < size; i++) 
+    {
+        int curr = (*tab)[i];
+        long int j = i - 1;
+
+        while (j >= 0 && centers[(*tab)[j]].center_y > centers[curr].center_y) 
+        {
+            (*tab)[j + 1] = (*tab)[j];
+            j = j - 1;
+        }
+        (*tab)[j + 1] = curr;
+    }
+}
+void sort_x(int **tab, size_t size, struct Center *centers){
+    for (size_t i = 1; i < size; i++) 
+    {
+        int curr = (*tab)[i];
+        long int j = i - 1;
+
+        while (j >= 0 && centers[(*tab)[j]].center_x > centers[curr].center_x) 
+        {
+            (*tab)[j + 1] = (*tab)[j];
+            j = j - 1;
+        }
+        (*tab)[j + 1] = curr;
+    }
+}
+/**/
+void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *centers)
+{
+    //start with the y
+    struct Dist_with *heights = calloc(n, sizeof(struct Dist_with));
+    struct Dist_with *heights2 = calloc(n, sizeof(struct Dist_with));
+    size_t size1 = 0;
+    size_t size2 = 0;
+    if (heights == NULL || heights2 == NULL)
+        errx(EXIT_FAILURE, "fail calloc distance with origin");
+
+
     for (size_t i = 0; i < n; i++)
     {
-        if (with_origin[i].dist < mediane * (1 - coeff) || //if too far from mediane
-        with_origin[i].dist > mediane * (1 + coeff))
+        struct Dist_with temp = {centers[i].size_y, i};
+        if ((*cells)[i].family == 1){
+            heights2[size2] = temp;
+            size2 ++;
+        }
+        else if ((*cells)[i].family != 2)
         {
-            //printf("i : %zu\n", i);
-            cells[with_origin[i].index].family = 2;
+            heights[size1] = temp;
+            size1 ++;
+        }
+    }
+    
+    
+    //sort by distances
+    sort_heights(&heights, size1);
+    sort_heights(&heights2, size2);
+    
+    //find the mediane
+    double mediane1 = heights[size1 / 2].dist;
+    double mediane2 = heights2[size2 / 2].dist;
+
+    double coeff1 = 0.2;
+    double coeff2 = 0.3;
+    for (size_t i = 0; i < size1; i++)
+    {
+        if (heights[i].dist < mediane1 * (1 - coeff1) || //if too far from mediane
+        heights[i].dist > mediane1 * (1 + coeff1))
+        {
+            (*cells)[heights[i].index].family = 2;
         }  
     }
 
-    free(with_origin);
+    for (size_t i = 0; i < size2; i++)
+    {
+        if (heights2[i].dist < mediane2 * (1 - coeff2) || //if too far from mediane
+        heights2[i].dist > mediane2 * (1 + coeff2))
+        {
+            (*cells)[heights2[i].index].family = 2;
+        }  
+    }
+
+
+
+
+
+
+
+
+    
+    //too far away
+    int *tab1 = calloc(n, sizeof(int));
+    int *tab2 = calloc(n, sizeof(int));
+    size1 = 0;
+    size2 = 0;
+    if (heights == NULL || heights2 == NULL)
+        errx(EXIT_FAILURE, "fail calloc distance with origin");
+
+
+    for (size_t i = 0; i < n; i++)
+    {
+        if ((*cells)[i].family == 1){
+            tab2[size2] = i;
+            size2 ++;
+        }
+        else if ((*cells)[i].family != 2)
+        {
+            tab1[size1] = i;
+            size1 ++;
+        }
+    }
+
+    
+    sort_y(&tab1,size1,centers);
+    sort_y(&tab2,size2,centers);
+
+    
+
+    size_t i = 0;
+    double coef = 0.01;
+    while (i < size1 - 1 && (centers[tab1[i]].center_y < centers[tab1[i + 1]].center_y * (1 - coef) || centers[tab1[i]].center_y > centers[tab1[i + 1]].center_y * (1 + coef))){
+        (*cells)[tab1[i]].family = 2;
+        i++;
+    }
+    i = size1 - 1;
+    while (i > 0 && (centers[tab1[i]].center_y < centers[tab1[i - 1]].center_y * (1 - coef) || centers[tab1[i]].center_y > centers[tab1[i - 1]].center_y * (1 + coef))){
+        (*cells)[tab1[i]].family = 2;
+        i--;
+    }
+
+    i = 0;
+    coef = 0.1;
+    while (i < size2){
+        char checked = 0;
+        size_t j = 0;
+        while ( j < size2 && checked < 7 ){
+            if ( i != j && centers[tab2[i]].center_y >= centers[tab2[j]].center_y * (1 - coef) && centers[tab2[i]].center_y <= centers[tab2[j]].center_y * (1 + coef))
+                checked ++;
+            j++;
+        }
+        if (checked < 7)
+            (*cells)[tab2[i]].family = 2;
+        i++;
+    }
+
+
+
+
+    sort_x(&tab1,size1,centers);
+    sort_x(&tab2,size2,centers);
+
+    i = 0;
+    coef = 0.01;
+    while ((*cells)[tab1[i]].family != 2 && i < size1 - 1 && (centers[tab1[i]].center_x < centers[tab1[i + 1]].center_x * (1 - coef) || centers[tab1[i]].center_x > centers[tab1[i + 1]].center_x * (1 + coef))){
+        (*cells)[tab1[i]].family = 2;
+        i++;
+    }
+    i = size1 - 1;
+    while ((*cells)[tab1[i]].family != 2 && i > 0 && (centers[tab1[i]].center_x < centers[tab1[i - 1]].center_x * (1 - coef) || centers[tab1[i]].center_x > centers[tab1[i - 1]].center_x * (1 + coef))){
+        (*cells)[tab1[i]].family = 2;
+        i--;
+    }
+
+    i = 0;
+    coef = 0.1;
+    while (i < size2){
+        char checked = 0;
+        size_t j = 0;
+        while ( j < size2 && checked < 7 ){
+            if ( i != j && centers[tab2[i]].center_x >= centers[tab2[j]].center_x * (1 - coef) && centers[tab2[i]].center_x <= centers[tab2[j]].center_x * (1 + coef))
+                checked ++;
+            j++;
+        }
+        if (checked < 7)
+            (*cells)[tab2[i]].family = 2;
+        i++;
+    }
+
+
+
+    free(heights);
+    free(heights2);
 }
     
 
@@ -484,7 +640,7 @@ void Remove_same_families(struct family** all_families, int n){
     for (size_t i = 0; i < n; i++){
         size_t j = 0;
         while (j < n && (*all_families)[i].completed != -1){
-            if ( i!= j && Same_families(((*all_families)[i]), (*all_families)[j])){
+            if (  i != j && (*all_families)[j].completed != -1 && Same_families((*all_families)[i], (*all_families)[j]) ){
                 (*all_families)[i].completed = -1;
             }
             j++;
@@ -493,7 +649,7 @@ void Remove_same_families(struct family** all_families, int n){
 }
 
 double Max_possible_dist(struct family f){
-    double coef = 1.6;
+    double coef = 1.7;
     return f.max_dist * (1 + coef/ f.size);
 }
 
@@ -611,8 +767,7 @@ int main(int argc, char* argv[])
     struct Center *centers;
     struct Dist_with **families;
     sort_by_families(cells, (size_t) n, &families, &centers);
-    
-    // ---------------------- Begining of Baptiste's code ----------------------
+
     
     //Initialize the families
     struct family* all_families = calloc(n, sizeof(struct family));
@@ -633,9 +788,9 @@ int main(int argc, char* argv[])
         }
     }
 
-    //Remove elements that are too far from the mediane distance
-
-    Remove_too_far_mediane(cells, (size_t)n, centers);
+    
+    
+    
 
     //Define what are the spies elements (grid and elements containing other elements)
     int* to_remove = calloc(n,sizeof(int));
@@ -663,11 +818,6 @@ int main(int argc, char* argv[])
 
 
 
-    //Here (remove not letters paterns)
-
-
-
-
     //Define the biggest family
     size_t max_ind = 0;
     double max_size = 0;
@@ -679,11 +829,13 @@ int main(int argc, char* argv[])
         }
     }
 
+
     //Remove every cells that are inside of the gid
     all_families[max_ind].completed = -1;
     for (size_t i = 0; i < all_families[max_ind].size; i++ ){
         cells[all_families[max_ind].tab[i].ind].family = 1;
     }
+
 
 
 
@@ -720,6 +872,8 @@ int main(int argc, char* argv[])
 
 
 
+
+
     //Remove every families that contains an element of the grid
     for (size_t i = 0; i < n; i++ ){
         size_t j = 0;
@@ -729,6 +883,8 @@ int main(int argc, char* argv[])
             j++;
         }
     }
+
+
 
     //Group the elements by family
     int k = 3;
@@ -740,6 +896,17 @@ int main(int argc, char* argv[])
             k++;
         }
     }
+
+
+
+    for (size_t i = 0; i < n; i++){
+        if (cells[i].family == 0)
+            cells[i].family = 1;
+    }
+
+
+    //Remove elements that are too far from the mediane distance
+    Remove_too_far_mediane(&cells, (size_t)n, centers);
  
     //
 
