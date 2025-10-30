@@ -1,5 +1,7 @@
 #include "Init.h"
 
+#define PI 3.14159265358979323846
+
 //binarize function
 void binarize(SDL_Surface *img) {
     Uint32 pixel;
@@ -71,7 +73,7 @@ void rotate_image(SDL_Surface **img, double angle_degrees) {
     SDL_Surface *src = *img;
 
     // Convert degrees to radians for trigonometric functions
-    double angle = angle_degrees * M_PI / 180.0;
+    double angle = angle_degrees * PI / 180.0;
 
     int w = src->w;
     int h = src->h;

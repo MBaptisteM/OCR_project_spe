@@ -10,7 +10,10 @@ int main(int argc, char* argv[])
     //initialize the surface with the grid
 
     IMG_Init(IMG_INIT_PNG);
-    SDL_Surface *img = IMG_Load(argv[1]); 
+    
+    char stock[150];
+    snprintf(stock, sizeof(stock), "../images/%s", argv[1]);
+    SDL_Surface *img = IMG_Load(stock);
     if (img == NULL)
         errx(EXIT_FAILURE, "fail surface with img");
 
