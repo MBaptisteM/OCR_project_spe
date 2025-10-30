@@ -1,13 +1,11 @@
-CC = gcc
-CFLAGS = -Wall -Wextra
-TARGET = Solver
-SRCS = Solver.c
-OBJS = $(SRCS:.c=.o)
-all: $(TARGET)
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+solver : Solver.o
+	gcc Solver.o -o solver -std=c99 -Wall -Wextra -lm
+
+Solver.o : Solver.c
+	gcc -c Solver.c -std=c99 -Wall -Wextra
 
 clean:
-	rm -f $(OBJS) $(TARGET)
-	rm -f network.png
+	rm -f Solver.o
+	rm -f solver
+
 .PHONY: all clean

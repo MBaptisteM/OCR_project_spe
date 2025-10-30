@@ -1,17 +1,14 @@
-TARGET = init
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c11
-SRC = Init.c Pixel.c
-OBJ = $(SRC:.c=.o)
-all: $(TARGET)
+init : Init.o Pixel.o
+	gcc Init.o Pixel.o -o init -std=c99 -Wall -Wextra `sdl2-config --cflags --libs` -lSDL2_image -lm
 
-$(TARGET): $(OBJ)
-	$(CC) $(OBJ) -o $(TARGET) $(CFLAGS)
+Init.o : Init.c
+	gcc -c Init.c -std=c99 -Wall -Wextra
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+Pixel.o : Pixel.c
+	gcc -c Pixel.c -std=c99 -Wall -Wextra
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f Init.o Pixel.o
+	rm -f init
 
 .PHONY: all clean

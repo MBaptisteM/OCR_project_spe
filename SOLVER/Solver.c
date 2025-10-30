@@ -3,56 +3,56 @@
 #include <ctype.h>
 #include "Solver.h"
 
-#define MAX 100		// Taille maximale de la grille (100x100)
+#define MAX 100		// Maximum grid size (100x100)
 
 char grid[MAX][MAX];
-int rows = 0, cols = 0;	// Dimensions de la grille
+int rows = 0, cols = 0;	// Grid dimensions
 
 //loadGrid function
 int loadGrid(const char *filename) {
 	FILE *f = fopen(filename, "r");
 	if (!f) {
-		printf("Erreur ouverture fichier '%s'\n", filename);
+		printf("Error opening file '%s'\n", filename);
 		return 0;
 	}
 
-	char buffer[MAX + 2];	// Ligne temporaire pour lire chaque ligne du fichier
-	int expected_len = -1;	// Longueur attendue des lignes (vérifie que toutes les lignes ont la même taille)
+	char buffer[MAX + 2];	// Temporary line buffer to read each line from the file
+	int expected_len = -1;	// Expected line length (checks that all lines have the same size)
 
-	// Lecture du fichier ligne par ligne
+	// Read the file line by line
 	while (fgets(buffer, sizeof(buffer), f)) {
 		size_t len = strlen(buffer);
 
-		// Retire le '\n' de fin de ligne si présent
+		// Remove the '\n' at the end of the line if present
 		if (buffer[len - 1] == '\n') buffer[len - 1] = '\0';
 		len = strlen(buffer);
 
-		if (len == 0) continue;	// Ignore les lignes vides
+		if (len == 0) continue;	// Ignore empty lines
 
-		// Si c’est la première ligne, on met la longueur attendue
+		// If this is the first line, set the expected length
 		if (expected_len == -1) expected_len = len;
 		else if ((int)len != expected_len) {
-			// Si une ligne est plus courte ou plus longue -> erreur
-			printf("Ligne pas de même longeur\n");
+			// If a line is shorter or longer -> error
+			printf("Line length mismatch\n");
 			fclose(f);
 			return 0;
 		}
 
-		// Si on dépasse la taille maximale de la grille
+		// If we exceed the maximum grid size
 		if (rows >= MAX) {
-			printf("Trop large\n");
+			printf("Grid too large\n");
 			fclose(f);
 			return 0;
 		}
 
-		// Vérifie que chaque caractère est une lettre (pas de chiffres ou symboles)
+		// Check that each character is a letter (no digits or symbols)
 		for (size_t i = 0; i < len; i++) {
 			if (!isalpha((unsigned char)buffer[i])) {
-				printf("Error: caractère '%c' invalide\n", buffer[i]);
+				printf("Error: invalid character '%c'\n", buffer[i]);
 				fclose(f);
 				return 0;
 			}
-			grid[rows][i] = buffer[i];	// Copie le caractère dans la grille
+			grid[rows][i] = buffer[i];	// Copy the character into the grid
 		}
 
 		grid[rows][len] = '\0';
@@ -61,17 +61,17 @@ int loadGrid(const char *filename) {
 
 	fclose(f);
 
-	// Vérifie que la grille n’est pas vide
+	// Check that the grid is not empty
 	if (rows == 0 || expected_len <= 0) {
-		printf("Erreur : Grille vide ou invalide\n");
+		printf("Error: Empty or invalid grid\n");
 		return 0;
 	}
 
-	cols = expected_len;	// Définit le nombre de colonnes
+	cols = expected_len;	// Set the number of columns
 	return 1;
 }
 
-//Liste des déplacements possibles
+//List of possible moves
 int dx[] = {1, 1, 0, -1, -1, -1, 0, 1};
 int dy[] = {0, 1, 1, 1, 0, -1, -1, -1};
 
@@ -79,36 +79,36 @@ int dy[] = {0, 1, 1, 1, 0, -1, -1, -1};
 int searchWord(const char *word, int *x0, int *y0, int *x1, int *y1) {
 	int len = strlen(word);
 
-	// Parcours de toutes les cases de la grille
+	// Traverse all cells of the grid
 	for (int y = 0; y < rows; y++) {
 		for (int x = 0; x < cols; x++) {
-			// Test dans les 8 directions
+			// Test in 8 directions
 			for (int d = 0; d < 8; d++) {
 				int nx = x;
 				int ny = y;
 				int k;
 
-				// Vérifie chaque lettre du mot dans la direction choisie
+				// Check each letter of the word in the chosen direction
 				for (k = 0; k < len; k++) {
-					// Si on sort de la grille, on arrête
+					// If we go out of the grid, stop
 					if (ny < 0 || ny >= rows || nx < 0 || nx >= cols) {
 						break;
 					}
 
-					// Si la lettre ne correspond pas (insensible à la casse)
+					// If the letter does not match (case insensitive)
 					if (toupper(grid[ny][nx]) != toupper(word[k])) {
 						break;
 					}
 
-					// Avance dans la direction actuelle
+					// Move forward in the current direction
 					nx += dx[d];
 					ny += dy[d];
 				}
 
-				// Si toutes les lettres ont correspondu
+				// If all letters matched
 				if (k == len) {
-					*x0 = x; *y0 = y;	// Coordonnées de départ
-					*x1 = nx - dx[d]; *y1 = ny - dy[d];	// Coordonnées de fin (on revient d’un pas)
+					*x0 = x; *y0 = y;	// Starting coordinates
+					*x1 = nx - dx[d]; *y1 = ny - dy[d];	// Ending coordinates (step back one)
 					return 1;
 				}
 			}
@@ -119,7 +119,7 @@ int searchWord(const char *word, int *x0, int *y0, int *x1, int *y1) {
 
 int main(int argc, char *argv[]) {
 	if (argc != 3) {
-		printf("Mauvais nombre d'args\n");
+		printf("Incorrect number of arguments\n");
 		return 1;
 	}
 
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
 	if (searchWord(argv[2], &x0, &y0, &x1, &y1))
 		printf("(%d,%d)(%d,%d)\n", x0, y0, x1, y1);
 	else
-		printf("Mot pas trouvé dans la grille\n");
+		printf("Word not found in the grid\n");
 
 	return 0;
 }
