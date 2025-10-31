@@ -1,5 +1,5 @@
 #include "get_letters.h"
-#define BLACK_THRESHOLD 160 //under 120 we assume it's a dark gray pixel
+#define BLACK_THRESHOLD 160 //under this value we assume it's a dark gray pixel
 
 void dfs(unsigned char **img, int **labels, int w, int h, int x, int y, int label, struct Cell *cell, int black_TH)
 {
@@ -75,7 +75,6 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                 size_t i = 0;
                 for (size_t i = 0; i < size; i++){
                     if (img[tab[i].y][tab[i].x] < BLACK_THRESHOLD + 40 && tab[i].y < cells[label - 1].y_min + abs(cells[label - 1].y_max - cells[label - 1].y_min) * 0.9 && labels[tab[i].y][tab[i].x] == 0){
-                        printf("x = %i, y = %i, num = %i\n",tab[i].x, tab[i].y, label);
                         //we want to link
                         labels[tab[i].y][tab[i].x] = label;
                         if (cells[label - 1].x_max < tab[i].x)
@@ -202,7 +201,7 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                 }
                 else if (((cells[label - 1].x_max - cells[label - 1].x_min + 1) > 10 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 1.5)
                         ||
-                        ((cells[label - 1].x_max - cells[label - 1].x_min + 1) > 28 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 1.2)){
+                        ((cells[label - 1].y_max - cells[label - 1].y_min + 1) > 28 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 1.2)){
                     int white_min = -1;
                     size_t x_final = 0;
                     size_t diff = cells[label - 1].x_max - cells[label - 1].x_min + 1 ;
@@ -347,14 +346,6 @@ void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families
         mergeSort(tab, 0, n-2);
         distances[i] = tab;
     }
-    
-    /*for (size_t i = 0; i < n; i++)
-    {
-        for (size_t j = 0; j < n-1; j++)
-        {
-            printf("i = %zu j = %zu dist = %f index = %zu\n", i, j,  distances[i][j].dist,  distances[i][j].index);
-        }
-    }*/
     *c = centers;
     *families_sorted  = distances;
 }
@@ -513,16 +504,12 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     double mediane2 = heights2[size2 / 2].dist;
 
     double coeff1 = 0.24;
-    double coeff2 = 0.7; //etait a 0.3
-    //ce n'est pas ici le probleme du Y, il  le supprime apres surement
-    /**/for (size_t i = 0; i < size1; i++)
+    double coeff2 = 0.3;
+    for (size_t i = 0; i < size1; i++)
     {
         if (heights[i].dist < mediane1 * (1 - coeff1) || //if too far from mediane
         heights[i].dist > mediane1 * (1 + coeff1))
         {
-            /*printf("here\n");
-            printf("heights[i].dist : %f, mediane1 * (1 - coeff1) : %f mediane1 * (1 + coeff1) : %f\n", 
-            heights[i].dist, mediane1 * (1 - coeff1), mediane1 * (1 + coeff1));*/
             (*cells)[heights[i].index].family = 2;
         }  
     }
@@ -532,15 +519,9 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
         if (heights2[i].dist < mediane2 * (1 - coeff2) || //if too far from mediane
         heights2[i].dist > mediane2 * (1 + coeff2))
         {
-            printf("here\n");
             (*cells)[heights2[i].index].family = 2;
         }  
     }
-
-    printf("size1 : %zu size2 : %zu\n\n", size1, size2);
-
-    //check ici
-
 
 
 
@@ -572,7 +553,6 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     sort_y(&tab2,size2,centers);
 
     
-    printf("newsize1 : %zu newsize2 : %zu\n\n", size1, size2);
     size_t i = 0;
     double coef = 0.01;
     while (i < size1 - 1 && (centers[tab1[i]].center_y < centers[tab1[i + 1]].center_y * (1 - coef) || centers[tab1[i]].center_y > centers[tab1[i + 1]].center_y * (1 + coef))){
@@ -582,7 +562,6 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     i = size1 - 1;
     while (i > 0 && (centers[tab1[i]].center_y < centers[tab1[i - 1]].center_y * (1 - coef) || centers[tab1[i]].center_y > centers[tab1[i - 1]].center_y * (1 + coef))){
         (*cells)[tab1[i]].family = 2;
-        //printf("size1 : %zu size2 : %zu\n\n", size1, size2);
         i--;
     }
 
@@ -594,8 +573,7 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     sum /= size1;
     
     for (size_t i = 0; i < size1; i++){
-        if (abs(centers[tab1[i]].center_y - med) > sum * 3.5) { //etait a 2.5
-            //printf("size1 : %zu size2 : %zu\n\n", size1, size2);
+        if (abs(centers[tab1[i]].center_y - med) > sum * 3.5) {
             (*cells)[tab1[i]].family = 2;
 }
     }
@@ -612,14 +590,12 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
             j++;
         }
         if (checked < 7) {
-            printf("here\n");
             (*cells)[tab2[i]].family = 2;}
         i++;
     }
 
 
 
-    //toujours pas supprimer, il reste que cette partie a check
     sort_x(&tab1,size1,centers);
     sort_x(&tab2,size2,centers);
 
@@ -644,17 +620,12 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     }
     sum /= size1;
 
-    //ICIIIIIIIIIIIIIIIII
-    /*for (size_t i = 0; i < size1; i++){
-        printf("index : %zu abs(centers[tab1[i]].center_x - med) : %f sum * 3.5: %f\n", i,
-                abs(centers[tab1[i]].center_x - med), sum * 3.5);
-        if (abs(centers[tab1[i]].center_x - med) > sum * 3.5) {
-            printf("\n\n");
-            printf("index : %zu abs(centers[tab1[i]].center_x - med) : %f sum * 3.5: %f\n", i,
-                abs(centers[tab1[i]].center_x - med), sum * 3.5);
-            (*cells)[tab1[i]].family = 2;}
-    }*/
-    //////////////////////////////////////
+
+    for (size_t i = 0; i < size1; i++){
+        if (abs(centers[tab1[i]].center_x - med) > sum * 3.7) {
+            (*cells)[tab1[i]].family = 2;
+        }
+    }
 
     i = 0;
     coef = 0.1;
@@ -666,9 +637,9 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
                 checked ++;
             j++;
         }
-        /**/if (checked < 6){ //ici pour l'oeil du pigeon
-            printf("here\n");
-            (*cells)[tab2[i]].family = 2;}
+        if (checked < 6){
+            (*cells)[tab2[i]].family = 2;
+        }
         i++;
     }
 
@@ -745,7 +716,75 @@ char Add_next_element(struct family** all_families, struct Dist_with **families,
     }
     return changed;
 }
-/*double medianeDistance(struct family** all_families)
-{
-    return 0;
-}*/
+
+
+//count the horizontal thickness
+long int get_thickness(struct Cell c, unsigned char **img){
+    int y_mid1 = c.y_min + (c.y_max - c.y_min) / 4;
+    int y_mid2 = c.y_min + ((c.y_max - c.y_min) / 4) * 3;
+    int y_mid3 = c.y_min + (c.y_max - c.y_min) / 2;
+
+    int x = 0;
+    char start = 0;
+    char end = 0;
+    long int count1 = 0;
+    long int count2 = 0;
+    long int count3 = 0;
+    
+    while (x < c.x_max && end == 0)
+    {
+        int pixel = img[y_mid1][x];
+        if (pixel < 200 || start == 1){
+            start = 1;
+            count1 += pixel;
+
+            if (pixel < 140)
+                end = 1;
+        }
+
+        x++;
+    }
+
+    x = 0;
+    end = 0;
+    start = 0;
+    while (x < c.x_max && end == 0)
+    {
+        int pixel = img[y_mid2][x];
+        if (pixel < 200 || start == 1){
+            start = 1;
+            count2 += pixel;
+
+            if (pixel < 140)
+                end = 1;
+        }
+
+        x++;
+    }
+
+
+    x = 0;
+    end = 0;
+    start = 0;
+    while (x < c.x_max && end == 0)
+    {
+        int pixel = img[y_mid3][x];
+        if (pixel < 200 || start == 1){
+            start = 1;
+            count3 += pixel;
+
+            if (pixel < 140)
+                end = 1;
+        }
+
+        x++;
+    }
+
+    if (count2 < count1){
+        if (count3 < count2)
+            return count3;
+        return count2;
+    }
+        return count2;
+    return count1;
+}

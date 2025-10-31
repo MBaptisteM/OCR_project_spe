@@ -60,3 +60,4 @@ char Same_families(struct family f1, struct family f2);
 double Max_possible_dist(struct family f, char second_call);
 char contains(struct family f, int elt);
 char Add_next_element(struct family** all_families, struct Dist_with **families, int n, char second_call, struct Cell *cells);
+long int get_thickness(struct Cell c, unsigned char **img);

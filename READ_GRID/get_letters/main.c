@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
         }
     }
     
-    //Order 66 (use the spies as traitors) (you can only trust yoursefl and other letters bastards)
+    //Order 66 (use the spies as traitors) (you can only trust yoursefl and other letters)
     for (size_t i = 0; i < n; i++){
         size_t k = 0;
         
@@ -203,9 +203,6 @@ int main(int argc, char* argv[])
 
     
     //to make the selection more specific
-    
-
-
     struct family* all_families2 = calloc(n, sizeof(struct family));
 
     for (size_t i = 0 ;i < n; i++){
@@ -238,7 +235,6 @@ int main(int argc, char* argv[])
     Remove_same_families(&all_families2, n);
 
 
-/**/
     for (size_t i = 0; i < n; i++) {
         if (all_families2[i].completed == -1)
             continue;
@@ -247,7 +243,7 @@ int main(int argc, char* argv[])
             if (all_families2[j].completed == -1)
                 continue;
 
-            // Check if the two families share one element
+            //check if the two families share one element
             int share = 0;
             for (size_t a = 0; a < all_families2[i].size && !share; a++) {
                 for (size_t b = 0; b < all_families2[j].size && !share; b++) {
@@ -257,7 +253,7 @@ int main(int argc, char* argv[])
                 }
             }
 
-            // If they share an element, we delete the one with the smallest maximum distance
+            //if they share an element, we delete the one with the biggest maximum distance
             if (share) {
                 if (all_families2[i].max_dist <= all_families2[j].max_dist)
                     all_families2[j].completed = -1;
@@ -265,6 +261,16 @@ int main(int argc, char* argv[])
                     all_families2[i].completed = -1;
             }
         }
+    }
+
+
+
+    //MODIF HERE (DELETE)
+    for (int i = 0; i < n; i++) {
+        long int width = get_thickness(cells[i], gray);
+        if (width < 10 && cells[i].family != 1 && cells[i].y_max - cells[i].y_min < 15) 
+            cells[i].family = 2;
+        
     }
 
 
@@ -284,6 +290,7 @@ int main(int argc, char* argv[])
     }
 
 
+    //check if a word contains to few letters
     int actual = -1;
     int tab[n];
     int num = 0;
@@ -355,7 +362,6 @@ int main(int argc, char* argv[])
         if (c.family != 2)
         {
             
-            //printf("cell : %i\n", i);
             int width = c.x_max - c.x_min + 1;
             int height = c.y_max - c.y_min + 1;
 
@@ -373,17 +379,14 @@ int main(int argc, char* argv[])
             char filename[64];
             if (c.family == 1)
                 {
-                    //printf("grid/letter_%i x_min : %i y_min : %i\n", c.label-offset, c.x_min, c.y_min);
                     snprintf(filename, sizeof(filename), "../grid/letter_%i.png", c.label-offset);
                 }
             else
                 {
-                    //printf("letters/word_%i_letter_%i x_min : %i y_min : %i\n", c.family - 2, c.label-offset, c.x_min, c.y_min);
                     snprintf(filename, sizeof(filename), "../letters/word_%i_letter_%i.png", c.family - 2, c.label-offset);
                 }
 
             IMG_SavePNG(letter, filename);
-            //printf(" -> Saved in %s\n", filename);
 
             SDL_FreeSurface(letter);
             
