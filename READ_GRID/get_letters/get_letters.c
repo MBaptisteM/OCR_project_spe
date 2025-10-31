@@ -112,7 +112,9 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                 {
                     label--;
                 }
-                else if ((cells[label - 1].y_max - cells[label - 1].y_min + 1) >= 15 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 2.17){
+                else if (((cells[label - 1].y_max - cells[label - 1].y_min + 1) >= 15 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 2.17)
+                    ||
+                    ((cells[label - 1].y_max - cells[label - 1].y_min + 1) >= 28 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 2)){
                     int white_min = -1;
                     size_t x_final = 0;
                     int white_min2 = -1;
@@ -198,7 +200,9 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                     }
 
                 }
-                else if ((cells[label - 1].x_max - cells[label - 1].x_min + 1) > 10 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 1.5){
+                else if (((cells[label - 1].x_max - cells[label - 1].x_min + 1) > 10 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 1.5)
+                        ||
+                        ((cells[label - 1].x_max - cells[label - 1].x_min + 1) > 28 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 1.2)){
                     int white_min = -1;
                     size_t x_final = 0;
                     size_t diff = cells[label - 1].x_max - cells[label - 1].x_min + 1 ;
@@ -584,7 +588,7 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     sum /= size1;
     
     for (size_t i = 0; i < size1; i++){
-        if (abs(centers[tab1[i]].center_y - med) > sum * 2)
+        if (abs(centers[tab1[i]].center_y - med) > sum * 2.5)
             (*cells)[tab1[i]].family = 2;
     }
 
@@ -611,7 +615,7 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     sort_x(&tab2,size2,centers);
 
     i = 0;
-    coef = 0.01;
+    coef = 0.05;
     while ((*cells)[tab1[i]].family != 2 && i < size1 - 1 && (centers[tab1[i]].center_x < centers[tab1[i + 1]].center_x * (1 - coef) || centers[tab1[i]].center_x > centers[tab1[i + 1]].center_x * (1 + coef))){
         (*cells)[tab1[i]].family = 2;
         i++;

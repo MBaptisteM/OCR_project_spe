@@ -32,16 +32,45 @@ int main(int argc, char* argv[])
             errx(EXIT_FAILURE, "fail calloc gray[y]");
     }
 
-    Uint32 *pixels = (Uint32*) img->pixels;
-    int pitch = img->pitch/4; //number of pixels per line
+    
 
-    for (int y = 0; y < h; y++)
-    {
-        for (int x = 0; x < w; x++)
-        {
+    Uint8 *p = (Uint8 *)img->pixels;
+    int bpp = img->format->BytesPerPixel; //bytes per pixels
+
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
             Uint8 r, g, b;
-            SDL_GetRGB(pixels[y * pitch + x], img->format, &r, &g, &b);
-            gray[y][x] = (unsigned char)(0.299*r + 0.587*g + 0.114*b); 
+            Uint32 pixel;
+
+            //access to the pixels depending on the bpp
+            Uint8 *p_px = p + y * img->pitch + x * bpp;
+
+            switch (bpp) {
+                case 1:
+                    pixel = *p_px;
+                    SDL_GetRGB(pixel, img->format, &r, &g, &b);
+                    break;
+
+                case 2:
+                    pixel = *(Uint16 *)p_px;
+                    SDL_GetRGB(pixel, img->format, &r, &g, &b);
+                    break;
+
+                case 3:
+                    if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+                        pixel = p_px[0] << 16 | p_px[1] << 8 | p_px[2];
+                    else
+                        pixel = p_px[0] | p_px[1] << 8 | p_px[2] << 16;
+                    SDL_GetRGB(pixel, img->format, &r, &g, &b);
+                    break;
+
+                case 4:
+                    pixel = *(Uint32 *)p_px;
+                    SDL_GetRGB(pixel, img->format, &r, &g, &b);
+                    break;
+            }
+
+            gray[y][x] = (Uint8)(0.299*r + 0.587*g + 0.114*b);
         }
     }
 
@@ -168,23 +197,17 @@ int main(int argc, char* argv[])
 
     
     //Remove elements that are too far from the mediane distance
-    Remove_too_far_mediane(&cells, (size_t)n, centers);
+    //Remove_too_far_mediane(&cells, (size_t)n, centers);
 
 
 
     
     //to make the selection more specific
-    /*
-    size_t new_size = 0;
-    for (size_t i = 0 ;i < n; i++){
-        if (cells[i].family != 1 && cells[i].family != 2){
-            new_size ++;
-            cells[i].family = 0;
-        }
-    }
-        */
+    
+
 
     struct family* all_families2 = calloc(n, sizeof(struct family));
+
     for (size_t i = 0 ;i < n; i++){
         if (cells[i].family != 1 && cells[i].family != 2){
             struct family fam = {0,calloc(n, sizeof(struct fam_elt)),1,0};
