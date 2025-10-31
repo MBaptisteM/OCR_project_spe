@@ -370,7 +370,7 @@ double distance(struct Center c1, struct Center c2, char second_call)
 double Max_possible_dist(struct family f, char second_call){
     double coef = 1.7;
     if (second_call)
-        coef = 2.3;
+        coef = 1.5;
     return f.max_dist * (1 + coef/ f.size);
 }
 
@@ -508,7 +508,7 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     double mediane1 = heights[size1 / 2].dist;
     double mediane2 = heights2[size2 / 2].dist;
 
-    double coeff1 = 0.2;
+    double coeff1 = 0.24;
     double coeff2 = 0.3;
     for (size_t i = 0; i < size1; i++)
     {
@@ -563,7 +563,7 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     sort_y(&tab2,size2,centers);
 
     
-
+    
     size_t i = 0;
     double coef = 0.01;
     while (i < size1 - 1 && (centers[tab1[i]].center_y < centers[tab1[i + 1]].center_y * (1 - coef) || centers[tab1[i]].center_y > centers[tab1[i + 1]].center_y * (1 + coef))){
@@ -575,6 +575,19 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
         (*cells)[tab1[i]].family = 2;
         i--;
     }
+
+    unsigned long int sum = 0;
+    unsigned int med = centers[tab1[size1/2]].center_y;
+    for (size_t i = 0; i < size1; i++){
+        sum += abs(centers[tab1[i]].center_y - med);
+    }
+    sum /= size1;
+    
+    for (size_t i = 0; i < size1; i++){
+        if (abs(centers[tab1[i]].center_y - med) > sum * 2)
+            (*cells)[tab1[i]].family = 2;
+    }
+
 
     i = 0;
     coef = 0.1;
@@ -608,6 +621,20 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
         (*cells)[tab1[i]].family = 2;
         i--;
     }
+
+    med = centers[tab1[size1/2]].center_x;
+    sum = 0;
+    for (size_t i = 0; i < size1; i++){
+        sum += abs(centers[tab1[i]].center_x - med);
+    }
+    sum /= size1;
+
+    
+    for (size_t i = 0; i < size1; i++){
+        if (abs(centers[tab1[i]].center_x - med) > sum * 3.5)
+            (*cells)[tab1[i]].family = 2;
+    }
+
 
     i = 0;
     coef = 0.1;
