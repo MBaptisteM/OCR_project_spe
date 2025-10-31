@@ -513,12 +513,16 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     double mediane2 = heights2[size2 / 2].dist;
 
     double coeff1 = 0.24;
-    double coeff2 = 0.3;
-    for (size_t i = 0; i < size1; i++)
+    double coeff2 = 0.7; //etait a 0.3
+    //ce n'est pas ici le probleme du Y, il  le supprime apres surement
+    /**/for (size_t i = 0; i < size1; i++)
     {
         if (heights[i].dist < mediane1 * (1 - coeff1) || //if too far from mediane
         heights[i].dist > mediane1 * (1 + coeff1))
         {
+            /*printf("here\n");
+            printf("heights[i].dist : %f, mediane1 * (1 - coeff1) : %f mediane1 * (1 + coeff1) : %f\n", 
+            heights[i].dist, mediane1 * (1 - coeff1), mediane1 * (1 + coeff1));*/
             (*cells)[heights[i].index].family = 2;
         }  
     }
@@ -528,13 +532,14 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
         if (heights2[i].dist < mediane2 * (1 - coeff2) || //if too far from mediane
         heights2[i].dist > mediane2 * (1 + coeff2))
         {
+            printf("here\n");
             (*cells)[heights2[i].index].family = 2;
         }  
     }
 
+    printf("size1 : %zu size2 : %zu\n\n", size1, size2);
 
-
-
+    //check ici
 
 
 
@@ -567,7 +572,7 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     sort_y(&tab2,size2,centers);
 
     
-    
+    printf("newsize1 : %zu newsize2 : %zu\n\n", size1, size2);
     size_t i = 0;
     double coef = 0.01;
     while (i < size1 - 1 && (centers[tab1[i]].center_y < centers[tab1[i + 1]].center_y * (1 - coef) || centers[tab1[i]].center_y > centers[tab1[i + 1]].center_y * (1 + coef))){
@@ -577,6 +582,7 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     i = size1 - 1;
     while (i > 0 && (centers[tab1[i]].center_y < centers[tab1[i - 1]].center_y * (1 - coef) || centers[tab1[i]].center_y > centers[tab1[i - 1]].center_y * (1 + coef))){
         (*cells)[tab1[i]].family = 2;
+        //printf("size1 : %zu size2 : %zu\n\n", size1, size2);
         i--;
     }
 
@@ -588,8 +594,10 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     sum /= size1;
     
     for (size_t i = 0; i < size1; i++){
-        if (abs(centers[tab1[i]].center_y - med) > sum * 2.5)
+        if (abs(centers[tab1[i]].center_y - med) > sum * 3.5) { //etait a 2.5
+            //printf("size1 : %zu size2 : %zu\n\n", size1, size2);
             (*cells)[tab1[i]].family = 2;
+}
     }
 
 
@@ -603,14 +611,15 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
                 checked ++;
             j++;
         }
-        if (checked < 7)
-            (*cells)[tab2[i]].family = 2;
+        if (checked < 7) {
+            printf("here\n");
+            (*cells)[tab2[i]].family = 2;}
         i++;
     }
 
 
 
-
+    //toujours pas supprimer, il reste que cette partie a check
     sort_x(&tab1,size1,centers);
     sort_x(&tab2,size2,centers);
 
@@ -618,11 +627,13 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     coef = 0.05;
     while ((*cells)[tab1[i]].family != 2 && i < size1 - 1 && (centers[tab1[i]].center_x < centers[tab1[i + 1]].center_x * (1 - coef) || centers[tab1[i]].center_x > centers[tab1[i + 1]].center_x * (1 + coef))){
         (*cells)[tab1[i]].family = 2;
+         
         i++;
     }
     i = size1 - 1;
     while ((*cells)[tab1[i]].family != 2 && i > 0 && (centers[tab1[i]].center_x < centers[tab1[i - 1]].center_x * (1 - coef) || centers[tab1[i]].center_x > centers[tab1[i - 1]].center_x * (1 + coef))){
         (*cells)[tab1[i]].family = 2;
+        
         i--;
     }
 
@@ -633,12 +644,17 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     }
     sum /= size1;
 
-    
-    for (size_t i = 0; i < size1; i++){
-        if (abs(centers[tab1[i]].center_x - med) > sum * 3.5)
-            (*cells)[tab1[i]].family = 2;
-    }
-
+    //ICIIIIIIIIIIIIIIIII
+    /*for (size_t i = 0; i < size1; i++){
+        printf("index : %zu abs(centers[tab1[i]].center_x - med) : %f sum * 3.5: %f\n", i,
+                abs(centers[tab1[i]].center_x - med), sum * 3.5);
+        if (abs(centers[tab1[i]].center_x - med) > sum * 3.5) {
+            printf("\n\n");
+            printf("index : %zu abs(centers[tab1[i]].center_x - med) : %f sum * 3.5: %f\n", i,
+                abs(centers[tab1[i]].center_x - med), sum * 3.5);
+            (*cells)[tab1[i]].family = 2;}
+    }*/
+    //////////////////////////////////////
 
     i = 0;
     coef = 0.1;
@@ -650,8 +666,9 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
                 checked ++;
             j++;
         }
-        if (checked < 7)
-            (*cells)[tab2[i]].family = 2;
+        /**/if (checked < 6){ //ici pour l'oeil du pigeon
+            printf("here\n");
+            (*cells)[tab2[i]].family = 2;}
         i++;
     }
 

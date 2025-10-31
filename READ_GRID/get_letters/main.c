@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
 
     
     //Remove elements that are too far from the mediane distance
-    //Remove_too_far_mediane(&cells, (size_t)n, centers);
+    Remove_too_far_mediane(&cells, (size_t)n, centers);
 
 
 
@@ -238,9 +238,34 @@ int main(int argc, char* argv[])
     Remove_same_families(&all_families2, n);
 
 
+/**/
+    for (size_t i = 0; i < n; i++) {
+        if (all_families2[i].completed == -1)
+            continue;
 
-    //en gros si on a des éléments qui sont da,s plusieurs familles, on ne garde que la famille qui a la plus petite distance max
-    //remove l'autre -> completed = -1
+        for (size_t j = i + 1; j < n; j++) {
+            if (all_families2[j].completed == -1)
+                continue;
+
+            // Check if the two families share one element
+            int share = 0;
+            for (size_t a = 0; a < all_families2[i].size && !share; a++) {
+                for (size_t b = 0; b < all_families2[j].size && !share; b++) {
+                    if (all_families2[i].tab[a].ind == all_families2[j].tab[b].ind) {
+                        share = 1;
+                    }
+                }
+            }
+
+            // If they share an element, we delete the one with the smallest maximum distance
+            if (share) {
+                if (all_families2[i].max_dist <= all_families2[j].max_dist)
+                    all_families2[j].completed = -1;
+                else
+                    all_families2[i].completed = -1;
+            }
+        }
+    }
 
 
     k = 3;
