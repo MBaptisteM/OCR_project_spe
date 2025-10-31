@@ -215,6 +215,11 @@ int main(int argc, char* argv[])
     Remove_same_families(&all_families2, n);
 
 
+
+    //en gros si on a des éléments qui sont da,s plusieurs familles, on ne garde que la famille qui a la plus petite distance max
+    //remove l'autre -> completed = -1
+
+
     k = 3;
     for (size_t i = 0; i < n; i ++){
         if (all_families2[i].completed != -1){
@@ -268,16 +273,16 @@ int main(int argc, char* argv[])
     }
 
 
-    
-
-
-    
 
 
 
 
-    
-    
+
+
+
+
+
+
 
 
 
