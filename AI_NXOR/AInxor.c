@@ -154,15 +154,15 @@ int main(int argc, char* argv[]) {
     printf("Tests ( input {0,1}^2 -> output [0,1] -> rounded {0,1} ) :\n");
     for (int p = 0; p < 4; ++p) {
 
-	double x0 = X[p][0];
-    double x1 = X[p][1];
-    double net_h0 = w_ih[0][0]*x0 + w_ih[0][1]*x1 + b_h[0];
-    double net_h1 = w_ih[1][0]*x0 + w_ih[1][1]*x1 + b_h[1];
-    double h0 = sigmoid(net_h0);
-    double h1 = sigmoid(net_h1);
-    double net_o = w_ho[0]*h0 + w_ho[1]*h1 + b_o;
-    double o = sigmoid(net_o);
-	int out = o >= 0.5 ? 1 : 0;
+        double x0 = X[p][0];
+        double x1 = X[p][1];
+        double net_h0 = w_ih[0][0]*x0 + w_ih[0][1]*x1 + b_h[0];
+        double net_h1 = w_ih[1][0]*x0 + w_ih[1][1]*x1 + b_h[1];
+        double h0 = sigmoid(net_h0);
+        double h1 = sigmoid(net_h1);
+        double net_o = w_ho[0]*h0 + w_ho[1]*h1 + b_o;
+        double o = sigmoid(net_o);
+        int out = o >= 0.5 ? 1 : 0;
 
         printf("%i %i -> %.6f -> %i (success = %s)\n", X[p][0], X[p][1], o, out, targets[p] == out ? "True" : "False");
     }
@@ -199,7 +199,7 @@ void generate_network(double w_ih[2][2], double w_ho[2], double b_h[2], double b
     fprintf(f, "    subgraph cluster_hidden {\n");  //definition of the hidden layer
     fprintf(f, "        label=\"Hidden Layer\"; color=blue; style=dashed;\n");
     fprintf(f, "        H1 [label=\"%.2f\", fillcolor=lightblue];\n", b_h[0]);
-    fprintf(f, "        H2 [label=\"%.2f\", fillcolor=lightblue];\n", b_h[0]);
+    fprintf(f, "        H2 [label=\"%.2f\", fillcolor=lightblue];\n", b_h[1]);
     fprintf(f, "    }\n\n");
 
     fprintf(f, "    subgraph cluster_output {\n");  //definition of the output layer
