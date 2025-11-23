@@ -1,13 +1,25 @@
 CC = gcc
-CFLAGS = -Wall -Wextra
-TARGET = AInxor
-SRCS = AInxor.c
-OBJS = $(SRCS:.c=.o)
-all: $(TARGET)
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+CFLAGS = -O3 -std=c99 `sdl2-config --cflags --libs` -lSDL2_image -Wall -Wextra -lm
+
+SRC = main.c training.c extract_data.c dict.c
+OBJ = ${SRC:.c=.o}
+DEP = ${SRC:.c=.d}
+
+all: main
+
+main: ${OBJ}
+	${CC} -o $@ $^ ${CFLAGS}
+
+training: training.c
+	${CC} -o training training.c ${LDFLAGS}
+
+-include ${DEP}
+
+.PHONY: clean
 
 clean:
-	rm -f $(OBJS) $(TARGET)
-	rm -f network.png
-.PHONY: all clean
+	${RM} ${OBJ}
+	${RM} ${DEP}
+	${RM} training.o
+	${RM} main.o
+	${RM} main
