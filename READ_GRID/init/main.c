@@ -22,9 +22,11 @@ int main(int argc, char *argv[]) {
 	img = converted;
 
 	binarize(img);
-	rotate_image(&img, atoi(argv[2]));
+	double angle = detect_rotation_angle_projection(img, 1);
+	rotate_image(&img, angle);
 
 	IMG_SavePNG(img, "output.png");
+
 	// SDL_Window *window = SDL_CreateWindow("Image", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, img->w, img->h, 0);
 	// SDL_Surface *window_surface = SDL_GetWindowSurface(window);
 	// SDL_BlitSurface(img, NULL, window_surface, NULL);

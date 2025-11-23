@@ -319,6 +319,77 @@ void binarize(SDL_Surface *img) {
     }
 }
 */
+
+// detect_rotation_angle_projection function
+double detect_rotation_angle_projection(SDL_Surface *img, int step_deg) {
+    // Return 0 if image is NULL
+    if (!img) return 0.0;
+
+    // Conversion factor from degrees to radians
+    const double deg_to_rad = PI / 180.0;
+    const int ds = 4;
+
+    // Compute downsampled width and height
+    int w = img->w / ds, h = img->h / ds;
+
+    // Return 0 if image is too small
+    if (w < 10 || h < 10) return 0.0;
+
+    Uint8 r, g, b;
+    Uint8 *bw = malloc(w * h);
+    if (!bw) return 0.0;
+
+    SDL_LockSurface(img);
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            Uint32 p = getPixel(img, x * ds, y * ds);
+            SDL_GetRGB(p, img->format, &r, &g, &b);
+            int gray = (r + g + b) / 3;
+            bw[y * w + x] = (gray < 128) ? 1 : 0;
+        }
+    }
+    SDL_UnlockSurface(img);
+
+    double best_angle = 0.0;
+    double best_score = -1.0;
+
+    // Loop over angles from -45 to 45 degrees
+    for (int a = -45; a <= 45; a += step_deg) {
+        double rad = a * deg_to_rad;
+        double sin_a = sin(rad), cos_a = cos(rad);
+
+        // Loop over angles from -45 to 45 degrees
+        int nbins = w + h;
+        int *proj = calloc(nbins, sizeof(int));
+        if (!proj) { free(bw); return 0.0; }
+
+        // Loop over angles from -45 to 45 degrees
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                if (!bw[y * w + x]) continue;
+                int p = (int)(x * sin_a + y * cos_a + nbins / 2);
+                if (p >= 0 && p < nbins) proj[p]++;
+            }
+        }
+
+        // Compute projection score (sum of squares)
+        double score = 0.0;
+        for (int i = 0; i < nbins; i++)
+            score += proj[i] * proj[i];
+
+        // Update best angle if score is higher
+        if (score > best_score) {
+            best_score = score;
+            best_angle = a;
+        }
+        free(proj);
+    }
+
+    free(bw);
+    return best_angle;
+}
+
+
 // rotate_image function
 void rotate_image(SDL_Surface **img, double angle_degrees) {
     if (img == 0 || *img == 0) 
