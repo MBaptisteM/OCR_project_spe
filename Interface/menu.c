@@ -139,10 +139,10 @@ void menu_initialize(SDL_Window **window, SDL_Renderer **renderer,
         SDL_CreateTextureFromSurface(*renderer, trainSurf);
 
     SDL_Rect trainRect = {
-        (WIDTH - (int)(trainSurf->w * 1.6)) / 2,
-        200,
-        (int)(trainSurf->w * 1.6),
-        (int)(trainSurf->h * 3.5)
+        (WIDTH - (int)(trainSurf->w * 1.6)) / 2.1,
+        220,
+        (int)(trainSurf->w * 1.7),
+        (int)(trainSurf->h * 4)
     };
     SDL_RenderCopy(*renderer, buttonTex, NULL, &trainRect);
 
@@ -161,10 +161,10 @@ void menu_initialize(SDL_Window **window, SDL_Renderer **renderer,
         SDL_CreateTextureFromSurface(*renderer, resolveSurf);
 
     SDL_Rect resolveRect = {
-        (WIDTH - (int)(resolveSurf->w * 1.6)) / 2,
-        320,
-        (int)(resolveSurf->w * 1.6),
-        (int)(resolveSurf->h * 3.5)
+        (WIDTH - (int)(resolveSurf->w * 1.6)) / 2.1,
+        310,
+        (int)(resolveSurf->w * 1.7),
+        (int)(resolveSurf->h * 4)
     };
     SDL_RenderCopy(*renderer, buttonTex, NULL, &resolveRect);
 

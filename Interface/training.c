@@ -36,10 +36,10 @@ void training_screen(SDL_Window *window, SDL_Renderer *renderer)
         SDL_CreateTextureFromSurface(renderer, stopSurf);
 
     SDL_Rect stopRect = {
-        (WIDTH - stopSurf->w * 1.6) / 2,
-        350,
-        stopSurf->w * 1.6,
-        stopSurf->h * 3.5
+        (WIDTH - stopSurf->w * 1.6) / 2.16,
+        220,
+        stopSurf->w * 1.9,
+        stopSurf->h * 4.1
     };
 
     SDL_Rect stopTxtRect = {
