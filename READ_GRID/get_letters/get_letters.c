@@ -1,7 +1,8 @@
 #include "get_letters.h"
 #define BLACK_THRESHOLD 160 //under this value we assume it's a dark gray pixel
 
-void dfs(unsigned char **img, int **labels, int w, int h, int x, int y, int label, struct Cell *cell, int black_TH)
+void dfs(unsigned char **img, int **labels, int w, int h, 
+    int x, int y, int label, struct Cell *cell, int black_TH)
 {
     //end of recursion
     if (x < 0 || x >= w || y < 0|| y >= h){
@@ -32,13 +33,14 @@ void dfs(unsigned char **img, int **labels, int w, int h, int x, int y, int labe
 
     int edit[] = {1,0, -1,0, 0,1, 0,-1, 1,1, -1,1, 1,-1, -1,-1};
     for (size_t i = 0; i < 16; i+=2){
-        dfs(img, labels, w, h, x + edit[i], y + edit[i + 1], label, cell, black_TH);
+        dfs(img, labels, w, h, x + edit[i], y + edit[i + 1], 
+                                        label, cell, black_TH);
     }
     return;
 }
 
-int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell **out)
-{
+int label_image_dfs(unsigned char **img, int **labels, 
+                    int w, int h, struct Cell **out){
     int label = 0;
     int alloc_size = 100; //first estimation of 100 cells
     int black_TH = BLACK_THRESHOLD;
@@ -70,57 +72,35 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
 
                 //cells[label-1].area = 0;
                 dfs(img, labels, w, h, x, y, label, &cells[label-1], black_TH);
-                
-                /*
-                size_t i = 0;
-                for (size_t i = 0; i < size; i++){
-                    if (img[tab[i].y][tab[i].x] < BLACK_THRESHOLD + 40 && tab[i].y < cells[label - 1].y_min + abs(cells[label - 1].y_max - cells[label - 1].y_min) * 0.9 && labels[tab[i].y][tab[i].x] == 0){
-                        //we want to link
-                        labels[tab[i].y][tab[i].x] = label;
-                        if (cells[label - 1].x_max < tab[i].x)
-                            cells[label - 1].x_max = tab[i].x;
 
-                        if (cells[label - 1].y_max < tab[i].y)
-                            cells[label - 1].y_max = tab[i].y;
 
-                        if (cells[label - 1].x_min > tab[i].x)
-                            cells[label - 1].x_min = tab[i].x;
-
-                        if (cells[label - 1].y_min > tab[i].y)
-                            cells[label - 1].y_min = tab[i].y;
-                        
-                        
-                        int edit[] = {1,0, -1,0, 0,1, 0,-1, 1,1, -1,1, 1,-1, -1,-1};
-                        for (size_t i = 0; i < 16; i+=2){
-                            size_t k = 0;
-                            size_t s = 0;
-                            struct XY* tab2 = dfs(img, labels, w, h, tab[i].x + edit[i], tab[i].y + edit[i + 1], label, &cells[label-1], &s);
-
-                            for (size_t k = 0; k < s; k++){
-                                tab[size] = tab2[k];
-                                size ++;
-                            }
-                        }
-                    }
-
-                    i++;
-                }
-                    */
                 //remove the cell if too small
                 if (cells[label-1].y_max - cells[label-1].y_min < 10)
                 {
                     label--;
                 }
-                else if (((cells[label - 1].y_max - cells[label - 1].y_min + 1) >= 15 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 2.17)
-                    ||
-                    ((cells[label - 1].y_max - cells[label - 1].y_min + 1) >= 28 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 2)){
+                else if (
+                ((cells[label - 1].y_max - cells[label - 1].y_min + 1) >= 15
+                &&
+                (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) /
+                (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) 
+                > 2.17)
+                ||
+                ((cells[label - 1].y_max - cells[label - 1].y_min + 1) >= 28 
+                && 
+                (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / 
+                (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) 
+                > 2)){
+
                     int white_min = -1;
                     size_t x_final = 0;
                     int white_min2 = -1;
                     size_t x_final2 = 0;
-                    for (size_t x = cells[label - 1].x_min; x < cells[label - 1].x_max; x++){
+                    for (size_t x = cells[label - 1].x_min; 
+                        x < cells[label - 1].x_max; x++){
                         double sum = 0;
-                        for (size_t y = cells[label - 1].y_min + 2; y <= cells[label - 1].y_max - 2; y++){
+                        for (size_t y = cells[label - 1].y_min + 2; y 
+                            <= cells[label - 1].y_max - 2; y++){
                             sum += img[y][x];
                         }
                         if (white_min == -1 || sum > white_min){
@@ -140,7 +120,8 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                         if (label >= alloc_size)
                         {
                             alloc_size *=2;
-                            cells = realloc(cells, alloc_size*sizeof(struct Cell));
+                            cells = 
+                                realloc(cells, alloc_size*sizeof(struct Cell));
                             if (cells == NULL)
                                 errx(EXIT_FAILURE, "fail realloc cells");
                         }
@@ -151,8 +132,10 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                         cells[label-1].y_min = cells[label - 2].y_min;
                         cells[label-1].y_max = cells[label - 2].y_max;
 
-                        for (size_t x = cells[label-1].x_min; x < cells[label-1].x_max; x++){
-                            for (size_t y = cells[label-1].y_min; y < cells[label-1].y_max; y++){
+                        for (size_t x = cells[label-1].x_min; 
+                            x < cells[label-1].x_max; x++){
+                            for (size_t y = cells[label-1].y_min; 
+                                y < cells[label-1].y_max; y++){
                                 if (labels[y][x] == label - 1)
                                     labels[y][x] = label;
                             }
@@ -162,7 +145,8 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                         if (label >= alloc_size)
                         {
                             alloc_size *=2;
-                            cells = realloc(cells, alloc_size*sizeof(struct Cell));
+                            cells = 
+                                realloc(cells, alloc_size*sizeof(struct Cell));
                             if (cells == NULL)
                                 errx(EXIT_FAILURE, "fail realloc cells");
                         }
@@ -173,8 +157,10 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                         cells[label-1].y_min = cells[label - 2].y_min;
                         cells[label-1].y_max = cells[label - 2].y_max;
 
-                        for (size_t x = cells[label-1].x_min; x < cells[label-1].x_max; x++){
-                            for (size_t y = cells[label-1].y_min; y < cells[label-1].y_max; y++){
+                        for (size_t x = cells[label-1].x_min; 
+                            x < cells[label-1].x_max; x++){
+                            for (size_t y = cells[label-1].y_min; 
+                                y < cells[label-1].y_max; y++){
                                 if (labels[y][x] == label - 1)
                                     labels[y][x] = label;
                             }
@@ -199,18 +185,31 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                     }
 
                 }
-                else if (((cells[label - 1].x_max - cells[label - 1].x_min + 1) > 10 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 1.5)
-                        ||
-                        ((cells[label - 1].y_max - cells[label - 1].y_min + 1) > 28 && (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) / (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) > 1.2)){
+                else if (((cells[label - 1].x_max - cells[label - 1].x_min + 1)
+                 > 10 && 
+                (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) /
+                (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) 
+                > 1.5)
+                ||
+                ((cells[label - 1].y_max - cells[label - 1].y_min + 1) > 28 
+                && 
+                (double)(cells[label - 1].x_max - cells[label - 1].x_min + 1) /
+                (double)(cells[label - 1].y_max - cells[label - 1].y_min + 1) 
+                > 1.2)){
                     int white_min = -1;
                     size_t x_final = 0;
                     size_t diff = cells[label - 1].x_max - cells[label - 1].x_min + 1 ;
-                    for (size_t x = cells[label - 1].x_min + diff / 3 + 2; x <= cells[label - 1].x_max - diff / 3 - 2; x++){
+                    for (size_t x = cells[label - 1].x_min + diff / 3 + 2; 
+                        x <= cells[label - 1].x_max - diff / 3 - 2; x++){
+
                         double sum = 0;
-                        for (size_t y = cells[label - 1].y_min + 2; y <= cells[label - 1].y_max - 2; y++){
+                        for (size_t y = cells[label - 1].y_min + 2; 
+                            y <= cells[label - 1].y_max - 2; y++){
                             sum += abs(255 - img[y][x]);
                         }
-                        sum *= 1 + abs(x - cells[label - 1].x_min - (cells[label - 1].x_max - cells[label - 1].x_min + 1)) / 2;
+                        sum *= 1 + abs(x - cells[label - 1].x_min - 
+                        (cells[label - 1].x_max - cells[label - 1].x_min + 1))
+                        / 2;
                         if (white_min == -1 || sum < white_min){
                             white_min = sum;
                             x_final = x;
@@ -224,7 +223,8 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                         if (label >= alloc_size)
                         {
                             alloc_size *=2;
-                            cells = realloc(cells, alloc_size*sizeof(struct Cell));
+                            cells = 
+                                realloc(cells, alloc_size*sizeof(struct Cell));
                             if (cells == NULL)
                                 errx(EXIT_FAILURE, "fail realloc cells");
                         }
@@ -235,8 +235,11 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
                         cells[label-1].y_min = cells[label - 2].y_min;
                         cells[label-1].y_max = cells[label - 2].y_max;
 
-                        for (size_t x = cells[label-1].x_min; x < cells[label-1].x_max; x++){
-                            for (size_t y = cells[label-1].y_min; y < cells[label-1].y_max; y++){
+                        for (size_t x = cells[label-1].x_min; 
+                            x < cells[label-1].x_max; x++){
+                            for (size_t y = cells[label-1].y_min; 
+                                y < cells[label-1].y_max; y++){
+
                                 if (labels[y][x] == label - 1)
                                     labels[y][x] = label;
                             }
@@ -309,7 +312,8 @@ int label_image_dfs(unsigned char **img, int **labels, int w, int h, struct Cell
 }
 
 
-void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families_sorted, struct Center **c, char second_call)
+void sort_by_families(struct Cell* cells, size_t n, 
+    struct Dist_with*** families_sorted, struct Center **c, char second_call)
 {
     struct Center *centers = calloc(n, sizeof(struct Center));
     if (centers == NULL)
@@ -337,7 +341,8 @@ void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families
         {
             if (j!= i)
             {
-                tab[j-offset].dist = distance(centers[i], centers[j],second_call);
+                tab[j-offset].dist = distance(centers[i], 
+                    centers[j],second_call);
                 tab[j-offset].index = j;
             }
             else
@@ -352,8 +357,10 @@ void sort_by_families(struct Cell* cells, size_t n, struct Dist_with*** families
 
 double distance(struct Center c1, struct Center c2, char second_call)
 {
-    double dist_x = sqrt((c2.center_x - c1.center_x)*(c2.center_x - c1.center_x));
-    double dist_y = sqrt((c2.center_y - c1.center_y)*(c2.center_y - c1.center_y));
+    double dist_x = sqrt((c2.center_x - c1.center_x)*
+                        (c2.center_x - c1.center_x));
+    double dist_y = sqrt((c2.center_y - c1.center_y)*
+                        (c2.center_y - c1.center_y));
     double diff_x = (double)abs(c1.size_x - c2.size_x);
     double diff_y = (double)abs(c1.size_y - c2.size_y);
     if (second_call)
@@ -362,10 +369,32 @@ double distance(struct Center c1, struct Center c2, char second_call)
         return dist_x*2 + dist_y*2 + diff_x*0.5 + diff_y*3;
 }
 
-double Max_possible_dist(struct family f, char second_call){
+double Max_possible_dist(struct family f, char second_call, 
+    struct Cell* cells, size_t index){
     double coef = 1.7;
-    if (second_call)
-        coef = 1.5;
+    if (second_call){
+        //To handle small distance between leters compared to the size
+        if ((cells[index].y_max - cells[index].y_min + 1) > 27){  
+            if ((cells[index].x_max - cells[index].x_min + 1) > 21 && 
+            (cells[index].y_max - cells[index].y_min + 1) > 29)
+                if ((cells[index].y_max - cells[index].y_min + 1) > 30)
+                    coef = 0.46;
+                else
+                    coef = 0.5;
+            else
+                coef = 1;
+        }
+        //handle the case when the letters are too far compared to their size
+        else if ((cells[index].y_max - cells[index].y_min + 1) > 14){ 
+            if ((cells[index].y_max - cells[index].y_min + 1) > 18)
+                coef = 3;
+            else
+                coef = 1.5;
+        }
+        else{
+            coef = 2.3; //2.3
+        }
+    }
     return f.max_dist * (1 + coef/ f.size);
 }
 
@@ -469,7 +498,8 @@ void sort_x(int **tab, size_t size, struct Center *centers){
     }
 }
 /**/
-void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *centers)
+void Remove_too_far_mediane(struct Cell** cells, size_t n, 
+    struct Center *centers)
 {
     //start with the y
     struct Dist_with *heights = calloc(n, sizeof(struct Dist_with));
@@ -507,7 +537,8 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     double coeff2 = 0.3;
     for (size_t i = 0; i < size1; i++)
     {
-        if (heights[i].dist < mediane1 * (1 - coeff1) || //if too far from mediane
+        //if too far from mediane
+        if (heights[i].dist < mediane1 * (1 - coeff1) || 
         heights[i].dist > mediane1 * (1 + coeff1))
         {
             (*cells)[heights[i].index].family = 2;
@@ -516,7 +547,8 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
 
     for (size_t i = 0; i < size2; i++)
     {
-        if (heights2[i].dist < mediane2 * (1 - coeff2) || //if too far from mediane
+        //if too far from mediane
+        if (heights2[i].dist < mediane2 * (1 - coeff2) || 
         heights2[i].dist > mediane2 * (1 + coeff2))
         {
             (*cells)[heights2[i].index].family = 2;
@@ -555,12 +587,22 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
     
     size_t i = 0;
     double coef = 0.01;
-    while (i < size1 - 1 && (centers[tab1[i]].center_y < centers[tab1[i + 1]].center_y * (1 - coef) || centers[tab1[i]].center_y > centers[tab1[i + 1]].center_y * (1 + coef))){
+    while (i < size1 - 1 && (centers[tab1[i]].center_y < 
+        centers[tab1[i + 1]].center_y * (1 - coef) 
+        || 
+        centers[tab1[i]].center_y > 
+        centers[tab1[i + 1]].center_y * (1 + coef))){
+
         (*cells)[tab1[i]].family = 2;
         i++;
     }
     i = size1 - 1;
-    while (i > 0 && (centers[tab1[i]].center_y < centers[tab1[i - 1]].center_y * (1 - coef) || centers[tab1[i]].center_y > centers[tab1[i - 1]].center_y * (1 + coef))){
+    while (i > 0 && (centers[tab1[i]].center_y < 
+        centers[tab1[i - 1]].center_y * (1 - coef) 
+        || 
+        centers[tab1[i]].center_y > 
+        centers[tab1[i - 1]].center_y * (1 + coef))){
+
         (*cells)[tab1[i]].family = 2;
         i--;
     }
@@ -585,7 +627,10 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
         char checked = 0;
         size_t j = 0;
         while ( j < size2 && checked < 7 ){
-            if ( i != j && centers[tab2[i]].center_y >= centers[tab2[j]].center_y * (1 - coef) && centers[tab2[i]].center_y <= centers[tab2[j]].center_y * (1 + coef))
+            if ( i != j && centers[tab2[i]].center_y >= 
+                centers[tab2[j]].center_y * 
+                (1 - coef) && centers[tab2[i]].center_y <= 
+                centers[tab2[j]].center_y * (1 + coef))
                 checked ++;
             j++;
         }
@@ -601,13 +646,21 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
 
     i = 0;
     coef = 0.05;
-    while ((*cells)[tab1[i]].family != 2 && i < size1 - 1 && (centers[tab1[i]].center_x < centers[tab1[i + 1]].center_x * (1 - coef) || centers[tab1[i]].center_x > centers[tab1[i + 1]].center_x * (1 + coef))){
+    while ((*cells)[tab1[i]].family != 2 && i < size1 - 1 && 
+    (centers[tab1[i]].center_x < centers[tab1[i + 1]].center_x * (1 - coef) 
+    || 
+    centers[tab1[i]].center_x > centers[tab1[i + 1]].center_x * (1 + coef))){
+
         (*cells)[tab1[i]].family = 2;
          
         i++;
     }
     i = size1 - 1;
-    while ((*cells)[tab1[i]].family != 2 && i > 0 && (centers[tab1[i]].center_x < centers[tab1[i - 1]].center_x * (1 - coef) || centers[tab1[i]].center_x > centers[tab1[i - 1]].center_x * (1 + coef))){
+    while ((*cells)[tab1[i]].family != 2 && i > 0 && 
+    (centers[tab1[i]].center_x < centers[tab1[i - 1]].center_x * (1 - coef) 
+    || 
+    centers[tab1[i]].center_x > centers[tab1[i - 1]].center_x * (1 + coef))){
+
         (*cells)[tab1[i]].family = 2;
         
         i--;
@@ -633,7 +686,10 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n, struct Center *center
         char checked = 0;
         size_t j = 0;
         while ( j < size2 && checked < 7 ){
-            if ( i != j && centers[tab2[i]].center_x >= centers[tab2[j]].center_x * (1 - coef) && centers[tab2[i]].center_x <= centers[tab2[j]].center_x * (1 + coef))
+            if ( i != j && centers[tab2[i]].center_x >= 
+                centers[tab2[j]].center_x * (1 - coef) && 
+                centers[tab2[i]].center_x <= 
+                centers[tab2[j]].center_x * (1 + coef))
                 checked ++;
             j++;
         }
@@ -667,7 +723,8 @@ void Remove_same_families(struct family** all_families, int n){
     for (size_t i = 0; i < n; i++){
         size_t j = 0;
         while (j < n && (*all_families)[i].completed != -1){
-            if (  i != j && (*all_families)[j].completed != -1 && Same_families((*all_families)[i], (*all_families)[j]) ){
+            if (  i != j && (*all_families)[j].completed != -1 
+            && Same_families((*all_families)[i], (*all_families)[j]) ){
                 (*all_families)[i].completed = -1;
             }
             j++;
@@ -683,7 +740,8 @@ char contains(struct family f, int elt){
     return 0;
 }
 
-char Add_next_element(struct family** all_families, struct Dist_with **families, int n, char second_call, struct Cell* cells){
+char Add_next_element(struct family** all_families, 
+    struct Dist_with **families, int n, char second_call, struct Cell* cells){
     char changed = 0;
     for (size_t i = 0; i < n; i++){
         struct family fam = (*all_families)[i];
@@ -692,16 +750,24 @@ char Add_next_element(struct family** all_families, struct Dist_with **families,
             double min = -1;
             size_t index = 0;
             for (size_t j = 0; j < fam.size; j++){ 
-                while (fam.tab[j].actual < n - 1 && (contains(fam, families[fam.tab[j].ind][fam.tab[j].actual].index) 
-                    || (second_call == 1 && (cells[families[fam.tab[j].ind][fam.tab[j].actual].index].family == 1 
-                    || cells[families[fam.tab[j].ind][fam.tab[j].actual].index].family == 2))))
+                while (fam.tab[j].actual < n - 1 && 
+            (contains(fam, families[fam.tab[j].ind][fam.tab[j].actual].index)
+            || 
+            (second_call == 1 && 
+            (cells[families[fam.tab[j].ind][fam.tab[j].actual].index].family
+            == 1 
+            || 
+            cells[families[fam.tab[j].ind][fam.tab[j].actual].index].family
+            == 2))))
                     fam.tab[j].actual ++;
-                if (fam.tab[j].actual < n - 1 && (min == -1 || families[fam.tab[j].ind][fam.tab[j].actual].dist < min)){
+                if (fam.tab[j].actual < n - 1 && (min == -1 || 
+                    families[fam.tab[j].ind][fam.tab[j].actual].dist < min)){
                     min = families[fam.tab[j].ind][fam.tab[j].actual].dist;
                     index = families[fam.tab[j].ind][fam.tab[j].actual].index;
                 }
             }
-            if (min == - 1 || (fam.max_dist != 0 && min > Max_possible_dist(fam, second_call)))
+            if (min == - 1 || (fam.max_dist != 0 && min > 
+                Max_possible_dist(fam, second_call, cells, index)))
                 fam.completed = 1;
             else{
                 struct fam_elt new = {0,index};

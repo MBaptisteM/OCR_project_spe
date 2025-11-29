@@ -121,7 +121,8 @@ int main(int argc, char* argv[])
     
     
 
-    //Define what are the spies elements (grid and elements containing other elements)
+    //Define what are the spies elements 
+    // (grid and elements containing other elements)
     int* to_remove = calloc(n,sizeof(int));
     size_t sizeRemove = 0;
     for (size_t i = 0; i < n; i++){
@@ -131,7 +132,8 @@ int main(int argc, char* argv[])
         }
     }
     
-    //Order 66 (use the spies as traitors) (you can only trust yoursefl and other letters)
+    //Order 66 (use the spies as traitors) 
+    // (you can only trust yoursefl and other letters)
     for (size_t i = 0; i < n; i++){
         size_t k = 0;
         
@@ -152,8 +154,10 @@ int main(int argc, char* argv[])
     double max_size = 0;
     double coef = 0.001;
     for (size_t i = 0; i < n; i ++){
-        if (all_families[i].completed != -1 && all_families[i].size / (all_families[i].max_dist * coef) > max_size){
-            max_size = all_families[i].size / (all_families[i].max_dist * coef);
+        if (all_families[i].completed != -1 && 
+            all_families[i].size/(all_families[i].max_dist * coef) > max_size){
+
+            max_size = all_families[i].size/(all_families[i].max_dist * coef);
             max_ind = i;
         }
     }
@@ -246,15 +250,24 @@ int main(int argc, char* argv[])
             //check if the two families share one element
             int share = 0;
             for (size_t a = 0; a < all_families2[i].size && !share; a++) {
-                for (size_t b = 0; b < all_families2[j].size && !share; b++) {
-                    if (all_families2[i].tab[a].ind == all_families2[j].tab[b].ind) {
+                for (size_t b = 0; b < all_families2[j].size && !share; b++){
+                    if (all_families2[i].tab[a].ind 
+                        == all_families2[j].tab[b].ind){
+
                         share = 1;
                     }
                 }
             }
 
-            //if they share an element, we delete the one with the biggest maximum distance
-            if (share) {
+            //if they share an element, we delete the one 
+            // with the biggest maximum distance
+            if (share && 
+                (cells[families[all_families2[j].tab[0].ind]
+                    [all_families2[j].tab[0].actual].index].y_max - 
+                    cells[families[all_families2[j].tab[0].ind]
+                    [all_families2[j].tab[0].actual].index].y_min) < 20){
+                    //check if it is not only because they are too far and big
+
                 if (all_families2[i].max_dist <= all_families2[j].max_dist)
                     all_families2[j].completed = -1;
                 else
@@ -268,7 +281,8 @@ int main(int argc, char* argv[])
     //MODIF HERE (DELETE)
     for (int i = 0; i < n; i++) {
         long int width = get_thickness(cells[i], gray);
-        if (width < 10 && cells[i].family != 1 && cells[i].y_max - cells[i].y_min < 15) 
+        if (width < 10 && cells[i].family != 1 &&
+             cells[i].y_max - cells[i].y_min < 15) 
             cells[i].family = 2;
         
     }
@@ -337,12 +351,6 @@ int main(int argc, char* argv[])
 
 
 
-
-
-
-
-
-
  
     //
 
@@ -354,10 +362,84 @@ int main(int argc, char* argv[])
 
     
 
-    //save letters into images
+    
+
+    //save letters into images and create grid and words struct
     int offset = 0;
+    size_t words_count = 0;
+
+    //grid elements
+    struct grid *grid = malloc(sizeof(struct grid));
+    if (grid == NULL)
+        errx(EXIT_FAILURE, "fail malloc grid");
+    grid->size = 0;
+    grid->cols = 0;
+
+    int last_word = -1;
+
+    for(int i = 0; i < n; i++)
+    {
+        int fam = cells[i].family;
+        if (fam == 1)
+            grid->size = grid->size + 1;
+        //get number of words
+        else if (fam != 2 && fam-3 > last_word)
+        {
+            words_count++;
+            last_word = fam-3;
+        }
+            
+    }
+
+    grid->letters = calloc(grid->size, sizeof(struct letters));
+    if(grid->letters == NULL)
+        errx(EXIT_FAILURE, "fail realloc or calloc grid->letters");
+
+    int gindex = 0;
+    int last_x = 0;
+    char cols_found = 0;
+    int threshold_cols = 0;
+
+    //words elements
+    struct words *words = malloc(sizeof(struct words));
+    if (words == NULL)
+        errx(EXIT_FAILURE, "fail malloc words");
+    
+    words->words_count = words_count;
+    words->words_sizes = calloc(words_count, sizeof(size_t));
+    if(words->words_sizes == NULL)
+        errx(EXIT_FAILURE, "fail calloc words_sizes");
+    words->paths = calloc(words_count, sizeof(char**));
+    if(words->paths == NULL)
+        errx(EXIT_FAILURE, "fail calloc paths");
+    words->words = calloc(words_count, sizeof(char*));
+    if(words->words == NULL)
+        errx(EXIT_FAILURE, "fail calloc words");
+
+    //get size of each word
+    for(int i = 0; i < n; i++)
+    {
+        int fam = cells[i].family;
+        if (fam != 1 && fam != 2)
+            words->words_sizes[fam-3] = words->words_sizes[fam-3] + 1;
+    }
+
+    //malloc path of each letter
+    for(size_t i = 0; i < words_count; i++)
+    {
+        *(words->paths+ i)  = calloc(words->words_sizes[i], sizeof(char*));
+        if (*(words->paths) == NULL)
+            errx(EXIT_FAILURE, "fail calloc *words->paths");
+
+        *(words->words+ i)  = calloc(words->words_sizes[i], sizeof(char));
+        if (*(words->words) == NULL)
+            errx(EXIT_FAILURE, "fail calloc *words->words");
+    }
+    last_word = -1;
+    int word_i = -1;
     for (int i = 0; i < n; i++)
     {
+        
         struct Cell c = cells[i];
         if (c.family != 2)
         {
@@ -368,23 +450,55 @@ int main(int argc, char* argv[])
             SDL_Rect srcRect = { c.x_min, c.y_min, width, height};
 
 
-            SDL_Surface *letter = SDL_CreateRGBSurfaceWithFormat(0, width, height, img->format->BitsPerPixel, SDL_PIXELFORMAT_RGBA8888);
+            SDL_Surface *letter = SDL_CreateRGBSurfaceWithFormat(0, width, 
+                height, img->format->BitsPerPixel, SDL_PIXELFORMAT_RGBA8888);
             if (letter == NULL)
                 errx(EXIT_FAILURE, "fail letter");
             
                 
-            SDL_BlitSurface(img, &srcRect, letter, NULL); //copy letter in surface
+            SDL_BlitSurface(img, &srcRect, letter, NULL); //copy lett surface
             
 
             char filename[64];
             if (c.family == 1)
+            {
+                if(threshold_cols == 0)
+                    threshold_cols = centers[i].size_x *1.5;
+                if(!cols_found)
                 {
-                    snprintf(filename, sizeof(filename), "../grid/letter_%i.png", c.label-offset);
+                    if(last_x == 0)
+                        grid->cols = 1;
+                    else
+                    {
+                        if(last_x - centers[i].center_x > threshold_cols)
+                            cols_found = 1;
+                        else
+                            grid->cols++;
+                    }
                 }
+
+                last_x = centers[i].center_x;
+
+                snprintf(filename, sizeof(filename), "../grid/letter_%i.png", 
+                gindex);
+                
+                grid->letters[gindex].center = centers[i];
+                grid->letters[gindex].path = strdup(filename);
+                gindex++;
+            }
             else
+            {
+                if(last_word < c.family - 3)
                 {
-                    snprintf(filename, sizeof(filename), "../letters/word_%i_letter_%i.png", c.family - 2, c.label-offset);
+                    last_word = c.family - 3;
+                    word_i = 0;
                 }
+                snprintf(filename, sizeof(filename), 
+                "../letters/word_%i_letter_%i.png", last_word, word_i);
+                words->paths[last_word][word_i] = strdup(filename);
+
+                word_i++;
+            }
 
             IMG_SavePNG(letter, filename);
 
@@ -394,6 +508,7 @@ int main(int argc, char* argv[])
         else
             offset++;
     }
+
 
     //clean everything
     for (int y = 0; y < h; y++)
