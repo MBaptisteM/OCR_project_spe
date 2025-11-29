@@ -35,7 +35,7 @@ float d1[H1], d2[H2], d3[OUTPUT];
 int save(const char *filename)
 {
     FILE *f = fopen(filename, "w");
-    if (f == 0) 
+    if (f == 0)
         return 0;
 
     //first layer
@@ -71,48 +71,48 @@ int save(const char *filename)
 int load(const char *filename)
 {
     FILE *f = fopen(filename, "r");
-    if (f == 0) 
+    if (f == 0)
         return 0;
 
     //first layer
     for (int i = 0; i < H1; i++){
         for (int j = 0; j < INPUT_SIZE; j++)
-            if (fscanf(f, "%f", &W1[i][j]) != 1){ 
-                fclose(f); 
-                return 0; 
+            if (fscanf(f, "%f", &W1[i][j]) != 1){
+                fclose(f);
+                return 0;
             }
 
-        if (fscanf(f, "%f", &b1[i]) != 1){ 
-            fclose(f); 
-            return 0; 
+        if (fscanf(f, "%f", &b1[i]) != 1){
+            fclose(f);
+            return 0;
         }
     }
 
     //second layer
     for (int i = 0; i < H2; i++){
         for (int j = 0; j < H1; j++)
-            if (fscanf(f, "%f", &W2[i][j]) != 1){ 
-                fclose(f); 
-                return 0; 
+            if (fscanf(f, "%f", &W2[i][j]) != 1){
+                fclose(f);
+                return 0;
             }
 
-        if (fscanf(f, "%f", &b2[i]) != 1){ 
-            fclose(f); 
-            return 0; 
+        if (fscanf(f, "%f", &b2[i]) != 1){
+            fclose(f);
+            return 0;
         }
     }
 
     //third layer
     for (int i = 0; i < OUTPUT; i++){
         for (int j = 0; j < H2; j++)
-            if (fscanf(f, "%f", &W3[i][j]) != 1){ 
-                fclose(f); 
-                return 0; 
+            if (fscanf(f, "%f", &W3[i][j]) != 1){
+                fclose(f);
+                return 0;
             }
 
-        if (fscanf(f, "%f", &b3[i]) != 1){ 
-            fclose(f); 
-            return 0; 
+        if (fscanf(f, "%f", &b3[i]) != 1){
+            fclose(f);
+            return 0;
         }
     }
 
@@ -130,29 +130,40 @@ void training(size_t num){
         init_weights();
     }
 
-    printf("%c\n",result("training_data/1.png"));
-
-    char** inputs_tab = calloc(INPUT_SIZE * num, sizeof(float*));
+    char** inputs_tab = calloc(num, sizeof(char*)); // allocation is correct for num samples
     for (size_t i = 0; i < num; i++){
         char* temp_path;
         int test = asprintf(&temp_path, "%s/%zu.png", PATH, i);
         inputs_tab[i] = extract(temp_path);
-        
+
     }
-    for (size_t i = 0; i < 10; i++){
-        for (size_t j = 0; j < 2; j++){
+    for (size_t i = 0; i < 200; i++){
+        for (size_t j = 0; j < num; j++){
             forward(inputs_tab[j]);
-            backward(inputs_tab[j], dict[j].value, 0.00005); //learning rate here
-        }   
+            backward(inputs_tab[j], (int)(dict[j].value - 'A'), 0.00005); //learning rate here
+        }
     }
     for (size_t i = 0; i < num; i++)
         free(inputs_tab[i]);
     free(inputs_tab);
-    
-    //enregistrer les poids ici
-    printf("%c\n\n",result("training_data/0.png"));
-    printf("%c\n\n",result("training_data/1.png"));
-    printf("%c\n",result("training_data/2.png"));
+
+    size_t correct = 0;
+
+    // Code pour afficher les résultats de chaque lettre et avoir le détail des probabilités.
+    printf("=== RESULTS OF ALL TRAINING SAMPLES ===\n");
+    for (size_t i = 0; i < num; i++) {
+        char temp_path[256];
+        snprintf(temp_path, sizeof(temp_path), "%s/%zu.png", PATH, i);
+        char r = result(temp_path);
+        char expected = dict[i].value;
+        if (r == expected)
+            correct++;
+        printf("Sample %zu -> %c (expected %c)\n", i, r, expected);
+    }
+
+    float accuracy = 100.0f * correct / num;
+    printf("=== SUMMARY ===\n");
+    printf("Correct predictions: %zu/%zu (%.2f%%)\n", correct, num, accuracy);
 
 
 
@@ -219,7 +230,7 @@ void forward(char* inputs)
 
         //relu to try to make the code more stable
         z1[i] = sum;
-        a1[i] = (sum > 0.0f) ? sum : 0.0f;    
+        a1[i] = (sum > 0.0f) ? sum : 0.0f;
     }
 
     //layer 2 — z2
@@ -268,9 +279,6 @@ void backward(char* inputs, int label, float lr)
         d3[i] = yhat[i] - (i == label ? 1.0f : 0.0f);
     }
 
-    
-    
-
     //dW3 / db3
     for (int i = 0; i < OUTPUT; i++) {
         float delta = d3[i];
@@ -315,6 +323,37 @@ void backward(char* inputs, int label, float lr)
         float *dw = dW1[i];
         for (int j = 0; j < INPUT_SIZE; j++)
             dw[j] = delta * inputs[j];
+    }
+
+    // gradient clipping
+    // used to major gradiant values to avoid NaN
+    const float CLIP = 10.0f;
+
+    for (int i = 0; i < OUTPUT; i++) {
+        if (db3[i] > CLIP) db3[i] = CLIP;
+        if (db3[i] < -CLIP) db3[i] = -CLIP;
+        for (int j = 0; j < H2; j++) {
+            if (dW3[i][j] > CLIP) dW3[i][j] = CLIP;
+            if (dW3[i][j] < -CLIP) dW3[i][j] = -CLIP;
+        }
+    }
+
+    for (int i = 0; i < H2; i++) {
+        if (db2[i] > CLIP) db2[i] = CLIP;
+        if (db2[i] < -CLIP) db2[i] = -CLIP;
+        for (int j = 0; j < H1; j++) {
+            if (dW2[i][j] > CLIP) dW2[i][j] = CLIP;
+            if (dW2[i][j] < -CLIP) dW2[i][j] = -CLIP;
+        }
+    }
+
+    for (int i = 0; i < H1; i++) {
+        if (db1[i] > CLIP) db1[i] = CLIP;
+        if (db1[i] < -CLIP) db1[i] = -CLIP;
+        for (int j = 0; j < INPUT_SIZE; j++) {
+            if (dW1[i][j] > CLIP) dW1[i][j] = CLIP;
+            if (dW1[i][j] < -CLIP) dW1[i][j] = -CLIP;
+        }
     }
 
     //update
