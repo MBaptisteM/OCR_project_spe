@@ -7,19 +7,19 @@ void menu_initialize(SDL_Window **window, SDL_Renderer **renderer,
     if (!renderer || !*renderer)
         errx(EXIT_FAILURE, "renderer is NULL in menu_initialize");
 
-    SDL_SetRenderDrawColor(*renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(*renderer, 236, 224, 197, 255);
     SDL_RenderClear(*renderer);
 
-    // ---------- BACKGROUND ----------
+    /*// ---------- BACKGROUND ----------
     SDL_Texture *background =
         IMG_LoadTexture(*renderer, "elements/background.png");
     if (!background)
         errx(EXIT_FAILURE, "fail load background");
 
-    SDL_RenderCopy(*renderer, background, NULL, NULL);
+    SDL_RenderCopy(*renderer, background, NULL, NULL);*/
 
-    // ---------- TITRE ----------
-    TTF_Font *title_font = TTF_OpenFont("elements/tittle.TTF", 100);
+    // ---------- tittle ----------
+    TTF_Font *title_font = TTF_OpenFont("elements/tittle.TTF", 80);
     if (!title_font)
         errx(EXIT_FAILURE, "fail open tittle.TTF");
 
@@ -120,7 +120,7 @@ void menu_initialize(SDL_Window **window, SDL_Renderer **renderer,
     SDL_DestroyTexture(line3Tex);
     TTF_CloseFont(tuto_font);
 
-    // ---------- BOUTONS ----------
+    // ---------- buttons ----------
     SDL_Texture *buttonTex =
         IMG_LoadTexture(*renderer, "elements/button.png");
     if (!buttonTex)
@@ -140,7 +140,7 @@ void menu_initialize(SDL_Window **window, SDL_Renderer **renderer,
 
     SDL_Rect trainRect = {
         (WIDTH - (int)(trainSurf->w * 1.6)) / 2.1,
-        220,
+        200,
         (int)(trainSurf->w * 1.7),
         (int)(trainSurf->h * 4)
     };
@@ -162,7 +162,7 @@ void menu_initialize(SDL_Window **window, SDL_Renderer **renderer,
 
     SDL_Rect resolveRect = {
         (WIDTH - (int)(resolveSurf->w * 1.6)) / 2.1,
-        310,
+        290,
         (int)(resolveSurf->w * 1.7),
         (int)(resolveSurf->h * 4)
     };
@@ -176,20 +176,20 @@ void menu_initialize(SDL_Window **window, SDL_Renderer **renderer,
     };
     SDL_RenderCopy(*renderer, resolveTex, NULL, &resolveTextRect);
 
-    // Renvoi des zones cliquables
+    // return buttons zones
     *training_button = trainRect;
     *resolve_button = resolveRect;
 
-    // On affiche TOUT
+    // display everything
     SDL_RenderPresent(*renderer);
 
-    // Clean des ressources locales
+    // Clean local ressources
     SDL_FreeSurface(trainSurf);
     SDL_FreeSurface(resolveSurf);
     SDL_DestroyTexture(trainTex);
     SDL_DestroyTexture(resolveTex);
     SDL_DestroyTexture(buttonTex);
-    SDL_DestroyTexture(background);
+    //SDL_DestroyTexture(background);
     TTF_CloseFont(btnFont);
 }
 

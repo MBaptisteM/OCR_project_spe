@@ -4,14 +4,17 @@
 #define WIDTH 1000
 #define HEIGHT 600
 
-void training_screen(SDL_Window *window, SDL_Renderer *renderer)
+int training_screen(SDL_Window *window, SDL_Renderer **renderer)
 {
     (void)window;
     int running = 1;
     SDL_Event event;
 
-    SDL_Texture *background =
-        IMG_LoadTexture(renderer, "elements/background.png");
+    /*SDL_Texture *background =
+        IMG_LoadTexture(renderer, "elements/background.png");*/
+
+    SDL_SetRenderDrawColor(*renderer, 236, 224, 197, 255); //bg color
+    SDL_RenderClear(*renderer);
 
     TTF_Font *big = TTF_OpenFont("elements/tittle.TTF", 50);
     SDL_Color color = {11, 36, 189, 255};
@@ -19,7 +22,7 @@ void training_screen(SDL_Window *window, SDL_Renderer *renderer)
     SDL_Surface *txtSurf =
         TTF_RenderText_Solid(big, "TRAINING IN PROGRESS", color);
     SDL_Texture *txt =
-        SDL_CreateTextureFromSurface(renderer, txtSurf);
+        SDL_CreateTextureFromSurface(*renderer, txtSurf);
 
     SDL_Rect txtRect = {
         (WIDTH - txtSurf->w) / 2,
@@ -28,12 +31,12 @@ void training_screen(SDL_Window *window, SDL_Renderer *renderer)
         txtSurf->h
     };
 
-    SDL_Texture *buttonTex = IMG_LoadTexture(renderer, "elements/button.png");
+    SDL_Texture *buttonTex = IMG_LoadTexture(*renderer, "elements/button.png");
 
     SDL_Surface *stopSurf =
         TTF_RenderText_Solid(big, "STOP", (SDL_Color){255, 255, 255,255});
     SDL_Texture *stopTxt =
-        SDL_CreateTextureFromSurface(renderer, stopSurf);
+        SDL_CreateTextureFromSurface(*renderer, stopSurf);
 
     SDL_Rect stopRect = {
         (WIDTH - stopSurf->w * 1.6) / 2.16,
@@ -54,7 +57,7 @@ void training_screen(SDL_Window *window, SDL_Renderer *renderer)
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT)
-                running = 0;
+                return -1;
 
             if (event.type == SDL_MOUSEBUTTONDOWN &&
                 event.button.button == SDL_BUTTON_LEFT)
@@ -67,11 +70,13 @@ void training_screen(SDL_Window *window, SDL_Renderer *renderer)
             }
         }
 
-        SDL_RenderCopy(renderer, background, NULL, NULL);
-        SDL_RenderCopy(renderer, txt, NULL, &txtRect);
-        SDL_RenderCopy(renderer, buttonTex, NULL, &stopRect);
-        SDL_RenderCopy(renderer, stopTxt, NULL, &stopTxtRect);
-        SDL_RenderPresent(renderer);
+        //SDL_RenderCopy(renderer, background, NULL, NULL);
+        SDL_SetRenderDrawColor(*renderer, 236, 224, 197, 255);
+        SDL_RenderClear(*renderer);
+        SDL_RenderCopy(*renderer, txt, NULL, &txtRect);
+        SDL_RenderCopy(*renderer, buttonTex, NULL, &stopRect);
+        SDL_RenderCopy(*renderer, stopTxt, NULL, &stopTxtRect);
+        SDL_RenderPresent(*renderer);
     }
 
     SDL_FreeSurface(txtSurf);
@@ -79,6 +84,8 @@ void training_screen(SDL_Window *window, SDL_Renderer *renderer)
     SDL_DestroyTexture(txt);
     SDL_DestroyTexture(stopTxt);
     SDL_DestroyTexture(buttonTex);
-    SDL_DestroyTexture(background);
+    //SDL_DestroyTexture(background);
     TTF_CloseFont(big);
+
+    return EXIT_SUCCESS;
 }
