@@ -11,6 +11,6 @@ void training(size_t num);
 void init_weights();
 void forward(char* inputs);
 void backward(char* inputs, int label, float lr);
-char result(char* path);
+char get_character(char* path);
 
 #endif

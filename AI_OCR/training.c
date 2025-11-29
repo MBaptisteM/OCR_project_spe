@@ -121,7 +121,6 @@ int load(const char *filename)
 }
 
 
-
 void training(size_t num){
     if (load("weights.txt"))
         printf("Weights have been loaded\n");
@@ -137,11 +136,12 @@ void training(size_t num){
         inputs_tab[i] = extract(temp_path);
 
     }
-    for (size_t i = 0; i < 200; i++){
+    for (size_t i = 0; i < 100; i++){
         for (size_t j = 0; j < num; j++){
             forward(inputs_tab[j]);
             backward(inputs_tab[j], (int)(dict[j].value - 'A'), 0.00005); //learning rate here
         }
+        printf("iteration %zu ended\n", i);
     }
     for (size_t i = 0; i < num; i++)
         free(inputs_tab[i]);
@@ -154,11 +154,12 @@ void training(size_t num){
     for (size_t i = 0; i < num; i++) {
         char temp_path[256];
         snprintf(temp_path, sizeof(temp_path), "%s/%zu.png", PATH, i);
-        char r = result(temp_path);
+        char r = get_character(temp_path);
         char expected = dict[i].value;
         if (r == expected)
             correct++;
-        printf("Sample %zu -> %c (expected %c)\n", i, r, expected);
+        if (r != expected)
+            printf("Sample %zu -> %c (expected %c)\n", i, r, expected);
     }
 
     float accuracy = 100.0f * correct / num;
@@ -174,7 +175,7 @@ void training(size_t num){
 }
 
 
-char result(char* path){
+char get_character(char* path){
     char* inputs = extract(path);
     forward(inputs);
 
@@ -185,7 +186,6 @@ char result(char* path){
             max = yhat[i];
             result = i + 'A';
         }
-        printf("%c = %f\n", 'A' + i,  yhat[i]);
     }
 
     free(inputs);
