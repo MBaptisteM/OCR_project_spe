@@ -1,12 +1,15 @@
-menu : main.o menu.o training.o resolve_window.o
-	gcc -o menu menu.c main.c training.c resolve_window.c -Wall -Wextra `sdl2-config --cflags --libs` -lSDL2_ttf -lSDL2_image
+CC = gcc
+CFLAGS = -Wall -Wextra `sdl2-config --cflags` -std=c99
+LDFLAGS = `sdl2-config --libs` -lSDL2_ttf -lSDL2_image -lm
 
-menu.o : main.c menu.c training.c resolve_window.c
-	gcc -c main.c menu.c training.c resolve_window.c
+SRC = main.c menu.c training.c resolve_window.c ../READ_GRID/init/Init.c ../READ_GRID/init/Pixel.c ../READ_GRID/get_letters/get_letters.c 
+OBJ = $(SRC:.c=.o)
+
+menu: $(OBJ)
+	$(CC) -o $@ $(OBJ) $(LDFLAGS)
+
+%.o: %.c
+	$(CC) -c $< $(CFLAGS)
+
 clean:
-	rm -f menu.o
-	rm -f menu
-	rm -f main.o
-	rm -f training.o
-	rm -f resolve_window.o
-.PHONY: all clean
+	rm -f $(OBJ) menu

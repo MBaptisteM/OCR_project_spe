@@ -103,9 +103,13 @@ void start_redraw(SDL_Renderer *renderer, ImageItem *images)
 void start_clear(SDL_Window *window, SDL_Renderer *renderer, 
     SDL_Texture *texture)
 {
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_DestroyTexture(texture);
+    if(texture)
+        SDL_DestroyTexture(texture);
+    if(renderer)
+        SDL_DestroyRenderer(renderer);
+    if(window)
+        SDL_DestroyWindow(window);
+
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();
@@ -138,7 +142,7 @@ int start_event_handler(SDL_Window *window, ImageItem *images)
     return 7;
 }
 SDL_Texture *loadChoice(const char* name, SDL_Window *window, 
-    SDL_Renderer *renderer) 
+    SDL_Renderer *renderer, SDL_Surface **image) 
 {
     (void)window;
     char path[200];
@@ -147,10 +151,11 @@ SDL_Texture *loadChoice(const char* name, SDL_Window *window,
     SDL_Surface* surface = IMG_Load(path);
     if (surface == NULL)
         errx(EXIT_FAILURE, "fail load selected picture in surface");
+    *image = surface;
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (texture == NULL)
         errx(EXIT_FAILURE, "fail create texture from surface");
-    SDL_FreeSurface(surface);
+    //SDL_FreeSurface(surface);
     
     return texture;
 

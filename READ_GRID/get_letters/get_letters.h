@@ -92,3 +92,5 @@ char contains(struct family f, int elt);
 char Add_next_element(struct family** all_families,
      struct Dist_with **families,int n, char second_call, struct Cell *cells);
 long int get_thickness(struct Cell c, unsigned char **img);
+
+void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **final_words);

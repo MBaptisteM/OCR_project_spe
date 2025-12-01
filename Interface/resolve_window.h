@@ -16,5 +16,5 @@ void start_initialize(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture **
 void start_redraw(SDL_Renderer *renderer, ImageItem *images);
 void start_clear(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *texture);
 int start_event_handler(SDL_Window *window, ImageItem *images);
-SDL_Texture *loadChoice(const char* name, SDL_Window *window, SDL_Renderer *renderer);
+SDL_Texture *loadChoice(const char* name, SDL_Window *window, SDL_Renderer *renderer, SDL_Surface **image);
 size_t isInsidePicture(ImageItem *images, int x, int y) ;

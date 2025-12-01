@@ -4,14 +4,6 @@
 
 
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "Pixel.h"
-
-
 //check the average light
 float light(SDL_Surface *img) {
     Uint32 pixel;
@@ -272,7 +264,8 @@ void binarize(SDL_Surface *img) {
             Uint8 gray = (Uint8)(0.3 * r + 0.59 * g + 0.11 * b);
 
             // General darkening step:
-            // Reduce brightness slightly before further processing to make the image overall darker
+            // Reduce brightness slightly before further processing to make the 
+            // image overall darker
             int darkened = gray - 25; // decrease overall brightness
             if (darkened < 0)
                 darkened = 0; // clamp to minimum 0 to avoid error
@@ -285,14 +278,15 @@ void binarize(SDL_Surface *img) {
                 gray = 255; // pure white for very bright pixels
             else {
                 // Moderate contrast adjustment:
-                // Scale the difference from mid-gray (128) by a contrast factor
+                //Scale the difference from mid-gray (128) by a contrast factor
                 float contrast = 3.0f;
                 float new_gray = (gray - 128) * contrast + 128;
 
                 // Slightly lower brightness to darken midtones further
                 new_gray -= 20;
 
-                // Clamp the adjusted grayscale value to valid range [0, 255] to avoid errors
+                // Clamp the adjusted grayscale value to valid range [0, 255] 
+                // to avoid errors
                 if (new_gray < 0) new_gray = 0;
                 if (new_gray > 255) new_gray = 255;
 
@@ -461,3 +455,4 @@ void rotate_image(SDL_Surface **img, double angle_degrees) {
     SDL_FreeSurface(*img);
     *img = rotated;
 }
+

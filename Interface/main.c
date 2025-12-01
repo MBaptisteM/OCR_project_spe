@@ -1,7 +1,10 @@
 #include "menu.h"
 #include "training.h"
 #include "resolve_window.h"
-#include <stdlib.h>
+#include "../READ_GRID/init/Init.h"
+#include "../READ_GRID/get_letters/get_letters.h"
+//#include "../SOLVER/Solver.h"
+#include <unistd.h>
 
 int main(void)
 {
@@ -10,7 +13,8 @@ int main(void)
     if (TTF_Init() < 0)
         errx(EXIT_FAILURE, "TTF_Init failed");
 
-    // window's creation
+    //-------------------------window's creation-------------------------------
+
     SDL_Window *window = SDL_CreateWindow(
         "",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -20,11 +24,14 @@ int main(void)
     if (!window)
         errx(EXIT_FAILURE, "SDL_CreateWindow failed");
 
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 
+        SDL_RENDERER_ACCELERATED);
     if (!renderer)
         errx(EXIT_FAILURE, "SDL_CreateRenderer failed");
 
     SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT);
+
+    //-------------------------menu and training-------------------------------
 
     SDL_Rect training_button;
     SDL_Rect resolve_button;
@@ -35,8 +42,10 @@ int main(void)
     {
         if (state == 1)
         {
-            menu_initialize(&window, &renderer, &training_button, &resolve_button);
-            state = menu_event_handler(&window, &training_button, &resolve_button);
+            menu_initialize(&window, &renderer, &training_button, 
+                &resolve_button);
+            state = menu_event_handler(&window, &training_button, 
+                &resolve_button);
         }
         else if (state == 3)
         {
@@ -59,6 +68,7 @@ int main(void)
         return EXIT_SUCCESS;
     }
         
+    //----------------------------resolve window-------------------------------
 
     SDL_Texture *texture = NULL;
     ImageItem *images = calloc(6, sizeof(ImageItem));
@@ -68,6 +78,7 @@ int main(void)
     int show_image = 0;   
     int selected = -1;
 
+    SDL_Surface *img = NULL;
     while (running != -1)
     {
         if (show_image == 0)
@@ -79,10 +90,18 @@ int main(void)
             {
                 selected = running - 1;
                 show_image = 1; 
-                texture = loadChoice(images[selected].name, window, renderer);
+                texture = loadChoice(images[selected].name, window, renderer,
+                     &img);
+                SDL_SetRenderDrawColor(renderer, 236, 224, 197, 255);
+                SDL_RenderClear(renderer);
+
+                SDL_RenderCopy(renderer, texture, NULL, NULL);
+                SDL_RenderPresent(renderer);
+
+                break;
             }
         }
-        else if (show_image == 1)
+        /*else if (show_image == 1)
         {
             SDL_SetRenderDrawColor(renderer, 236, 224, 197, 255);
             SDL_RenderClear(renderer);
@@ -95,14 +114,79 @@ int main(void)
                 if (ev.type == SDL_QUIT)
                     running = -1;
             }
-        }
+        }*/
     }
 
-
-    
     if (running == -1)
     {
         start_clear(window, renderer, texture);
+        return EXIT_SUCCESS;
     }
+
+    //sleep(2);
+
+    //--------------------------start pretreatement---------------------------- 
+
+    char pict_path[200];
+    sprintf(pict_path, "../READ_GRID/images/%s.png", (images[selected].name));
+
+    SDL_Surface *converted = SDL_ConvertSurfaceFormat(img, 
+        SDL_PIXELFORMAT_RGB888, 0);
+	SDL_FreeSurface(img);
+	img = converted;
+
+    binarize(img);
+    double angle = detect_rotation_angle_projection(img, 1);
+	rotate_image(&img, angle);
+
+	//-------------------display picture after pretreatement-------------------
+
+    texture = SDL_CreateTextureFromSurface(renderer, img);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_RenderPresent(renderer);
+    
+    //sleep(5);
+
+    //--------------------------image splitting--------------------------------
+
+    struct grid *grid = NULL;
+    struct words *words = NULL;
+
+    image_splitting(img, &grid, &words);
+
+    printf("grid size : %zu\n", grid->size);
+
+    start_clear(window, renderer, texture);
     return EXIT_SUCCESS;
+    //--------------------------call of AI-------------------------------------
+
+
+
+
+
+
+
+
+
+    //to keep displaying the picture loaded
+
+    /*SDL_Event ev;
+    int wait = 1;
+    while (wait)
+    {
+        while (SDL_PollEvent(&ev))
+        {
+            SDL_SetRenderDrawColor(renderer, 236, 224, 197, 255);
+            SDL_RenderClear(renderer);
+
+            SDL_RenderCopy(renderer, texture, NULL, NULL);
+            SDL_RenderPresent(renderer);
+            if (ev.type == SDL_QUIT)
+                wait = 0;
+            
+        }
+    }*/
+
+
+    
 }
