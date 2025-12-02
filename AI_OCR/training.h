@@ -7,6 +7,8 @@
 
 #define INPUT_SIZE 2058
 
+int save(const char *filename);
+int load(const char *filename);
 void training(size_t num);
 void init_weights();
 void forward(char* inputs);

@@ -117,7 +117,8 @@ int searchWord(const char *word, int *x0, int *y0, int *x1, int *y1) {
 	return 0;
 }
 
-int main(int argc, char *argv[]) {
+//was a main
+int solve(int argc, char *argv[]) {
 	if (argc != 3) {
 		printf("Incorrect number of arguments\n");
 		return 1;
