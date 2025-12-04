@@ -3,9 +3,7 @@
 #include <ctype.h>
 #include "Solver.h"
 
-#define MAX 100		// Maximum grid size (100x100)
-
-char grid[MAX][MAX];
+char gridSolver[MAX][MAX];
 int rows = 0, cols = 0;	// Grid dimensions
 
 //loadGrid function
@@ -52,10 +50,10 @@ int loadGrid(const char *filename) {
 				fclose(f);
 				return 0;
 			}
-			grid[rows][i] = buffer[i];	// Copy the character into the grid
+			gridSolver[rows][i] = buffer[i];	// Copy the character into the grid
 		}
 
-		grid[rows][len] = '\0';
+		gridSolver[rows][len] = '\0';
 		rows++;
 	}
 
@@ -96,7 +94,7 @@ int searchWord(const char *word, int *x0, int *y0, int *x1, int *y1) {
 					}
 
 					// If the letter does not match (case insensitive)
-					if (toupper(grid[ny][nx]) != toupper(word[k])) {
+					if (toupper(gridSolver[ny][nx]) != toupper(word[k])) {
 						break;
 					}
 

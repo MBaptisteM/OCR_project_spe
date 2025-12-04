@@ -586,7 +586,7 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n,
 
     
     size_t i = 0;
-    double coef = 0.01;
+    double coef = 0.05;
     while (i < size1 - 1 && (centers[tab1[i]].center_y < 
         centers[tab1[i + 1]].center_y * (1 - coef) 
         || 
@@ -880,6 +880,8 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     int w = img->w; //get picture dimensions
     int h = img->h;
 
+    //creation and initialization of grayscale based on img pixels
+
     unsigned char **gray = calloc(h, sizeof(unsigned char*));
     if (gray == NULL)
         errx(EXIT_FAILURE, "fail calloc gray");
@@ -948,6 +950,12 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
 
     struct Cell *cells;
     int n = label_image_dfs(gray, labels, w, h, &cells);
+    /*printf("[DBG] after label_image_dfs: n=%d\n", n);
+
+    int count_not_removed = 0;
+    for (int i = 0; i < n; ++i) if (cells[i].family != 2) count_not_removed++;
+        printf("[DBG] initially not family==2: %d\n", count_not_removed);*///patch
+
     
     //sort cells
 
@@ -964,6 +972,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
         fam.tab[0] = first;
         all_families[i] = fam;
     }
+
 
     //Add closests elements together
     int iter = 0;
@@ -1004,6 +1013,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     }
 
     Remove_same_families(&all_families, n);
+
 
 
 
@@ -1057,10 +1067,9 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
             cells[i].family = 1;
     }
 
-    
+
     //Remove elements that are too far from the mediane distance
     Remove_too_far_mediane(&cells, (size_t)n, centers);
-
 
 
     
@@ -1144,7 +1153,9 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
             cells[i].family = 2;
         
     }
-
+    /*int cnt2 = 0;
+    for (int i = 0; i < n; ++i) if (cells[i].family != 2) cnt2++;
+        printf("[DBG] after get_thickness filter: not-removed=%d\n", cnt2);*/ //patch
 
     k = 3;
     for (size_t i = 0; i < n; i ++){
@@ -1227,19 +1238,28 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     size_t words_count = 0;
 
     //grid elements
-    struct grid *grid = malloc(sizeof(struct grid));
-    if (grid == NULL)
+    struct grid *gridtemp = malloc(sizeof(struct grid));
+    if (gridtemp == NULL)
         errx(EXIT_FAILURE, "fail malloc grid");
-    grid->size = 0;
-    grid->cols = 0;
+    gridtemp->size = 0;
+    gridtemp->cols = 0;
 
     int last_word = -1;
+    /*printf("[DBG] final survivors (index: x_min,x_max,y_min,y_max,family):\n");
+    for (int i = 0; i < n; ++i) {
+        if (cells[i].family != 2) {
+            printf("  i=%d: x[%d..%d] y[%d..%d] fam=%d label=%d\n",
+                i, cells[i].x_min, cells[i].x_max, cells[i].y_min, cells[i].y_max,
+                cells[i].family, cells[i].label);
+        }
+    }*/ //patch
+
 
     for(int i = 0; i < n; i++)
     {
         int fam = cells[i].family;
         if (fam == 1)
-            grid->size = grid->size + 1;
+            gridtemp->size = gridtemp->size + 1;
         //get number of words
         else if (fam != 2 && fam-3 > last_word)
         {
@@ -1248,9 +1268,9 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
         }
             
     }
-
-    grid->letters = calloc(grid->size, sizeof(struct letters));
-    if(grid->letters == NULL)
+    printf("grid size : %zu\n",  gridtemp->size);
+    gridtemp->letters = calloc(gridtemp->size, sizeof(struct letters));
+    if(gridtemp->letters == NULL)
         errx(EXIT_FAILURE, "fail realloc or calloc grid->letters");
 
     int gindex = 0;
@@ -1285,12 +1305,12 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     //malloc path of each letter
     for(size_t i = 0; i < words_count; i++)
     {
-        *(words->paths+ i)  = calloc(words->words_sizes[i], sizeof(char*));
-        if (*(words->paths) == NULL)
+        words->paths[i]  = calloc(words->words_sizes[i], sizeof(char*));
+        if (words->paths[i] == NULL)
             errx(EXIT_FAILURE, "fail calloc *words->paths");
 
-        *(words->words+ i)  = calloc(words->words_sizes[i] + 1, sizeof(char));
-        if (*(words->words) == NULL)
+        words->words[i]  = calloc(words->words_sizes[i] + 1, sizeof(char));
+        if (words->words[i] == NULL)
             errx(EXIT_FAILURE, "fail calloc *words->words");
     }
     last_word = -1;
@@ -1326,26 +1346,27 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
                 if(!cols_found)
                 {
                     if(last_x == 0)
-                        grid->cols = 1;
+                        gridtemp->cols = 1;
                     else
                     {
                         if(last_x - centers[i].center_x > threshold_cols)
                             cols_found = 1;
                         else
-                            grid->cols++;
+                            gridtemp->cols++;
                     }
                 }
 
                 last_x = centers[i].center_x;
 
-                snprintf(filename, sizeof(filename), "READ_GRID/grid/letter_%i.png", 
-                gindex);
+                snprintf(filename, sizeof(filename), 
+                "READ_GRID/grid/letter_%i.png", gindex);
                 
-                grid->letters[gindex].center = centers[i];
-                grid->letters[gindex].path = malloc((strlen(filename) + 1) * sizeof(char));
-                if (grid->letters[gindex].path == NULL)
+                gridtemp->letters[gindex].center = centers[i];
+                gridtemp->letters[gindex].path = malloc((strlen(filename) + 1)
+                 * sizeof(char));
+                if (gridtemp->letters[gindex].path == NULL)
                     errx(EXIT_FAILURE, "malloc grid path");
-                strcpy(grid->letters[gindex].path ,filename);
+                strcpy(gridtemp->letters[gindex].path ,filename);
                 gindex++;
             }
             else
@@ -1357,7 +1378,8 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
                 }
                 snprintf(filename, sizeof(filename), 
                 "READ_GRID/letters/word_%i_letter_%i.png", last_word, word_i);
-                words->paths[last_word][word_i] = malloc((strlen(filename) + 1) * sizeof(char));
+                words->paths[last_word][word_i] = malloc((strlen(filename) + 1)
+                 * sizeof(char));
                 if (words->paths[last_word][word_i] == NULL)
                     errx(EXIT_FAILURE, "malloc wordpath");
                 strcpy(words->paths[last_word][word_i] ,filename);
@@ -1374,7 +1396,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
             offset++;
     }
     
-    *final_grid = grid;
+    *final_grid = gridtemp;
     *final_words = words;
 
     //clean everything
