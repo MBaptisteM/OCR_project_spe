@@ -950,11 +950,11 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
 
     struct Cell *cells;
     int n = label_image_dfs(gray, labels, w, h, &cells);
-    /*printf("[DBG] after label_image_dfs: n=%d\n", n);
+    /**/printf("[DBG] after label_image_dfs: n=%d\n", n);
 
     int count_not_removed = 0;
     for (int i = 0; i < n; ++i) if (cells[i].family != 2) count_not_removed++;
-        printf("[DBG] initially not family==2: %d\n", count_not_removed);*///patch
+        printf("[DBG] initially not family==2: %d\n", count_not_removed);//patch
 
     
     //sort cells
@@ -1070,7 +1070,9 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
 
     //Remove elements that are too far from the mediane distance
     Remove_too_far_mediane(&cells, (size_t)n, centers);
-
+    int cnt2 = 0;
+    for (int i = 0; i < n; ++i) if (cells[i].family != 2) cnt2++;
+        printf("[DBG] after mediane filter: not-removed=%d\n", cnt2); //patch
 
     
     //to make the selection more specific
@@ -1423,8 +1425,8 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     free(labels);
     free(cells);
     SDL_FreeSurface(img);
-    IMG_Quit();
-    SDL_Quit();
+    //IMG_Quit();
+    //SDL_Quit();
     //return EXIT_SUCCESS;
 
 }
