@@ -96,10 +96,10 @@ int label_image_dfs(unsigned char **img, int **labels,
                     size_t x_final = 0;
                     int white_min2 = -1;
                     size_t x_final2 = 0;
-                    for (size_t x = cells[label - 1].x_min; 
+                    for (int x = cells[label - 1].x_min; 
                         x < cells[label - 1].x_max; x++){
                         double sum = 0;
-                        for (size_t y = cells[label - 1].y_min + 2; y 
+                        for (int y = cells[label - 1].y_min + 2; y 
                             <= cells[label - 1].y_max - 2; y++){
                             sum += img[y][x];
                         }
@@ -132,9 +132,9 @@ int label_image_dfs(unsigned char **img, int **labels,
                         cells[label-1].y_min = cells[label - 2].y_min;
                         cells[label-1].y_max = cells[label - 2].y_max;
 
-                        for (size_t x = cells[label-1].x_min; 
+                        for (int x = cells[label-1].x_min; 
                             x < cells[label-1].x_max; x++){
-                            for (size_t y = cells[label-1].y_min; 
+                            for (int y = cells[label-1].y_min; 
                                 y < cells[label-1].y_max; y++){
                                 if (labels[y][x] == label - 1)
                                     labels[y][x] = label;
@@ -157,9 +157,9 @@ int label_image_dfs(unsigned char **img, int **labels,
                         cells[label-1].y_min = cells[label - 2].y_min;
                         cells[label-1].y_max = cells[label - 2].y_max;
 
-                        for (size_t x = cells[label-1].x_min; 
+                        for (int x = cells[label-1].x_min; 
                             x < cells[label-1].x_max; x++){
-                            for (size_t y = cells[label-1].y_min; 
+                            for (int y = cells[label-1].y_min; 
                                 y < cells[label-1].y_max; y++){
                                 if (labels[y][x] == label - 1)
                                     labels[y][x] = label;
@@ -203,7 +203,7 @@ int label_image_dfs(unsigned char **img, int **labels,
                         x <= cells[label - 1].x_max - diff / 3 - 2; x++){
 
                         double sum = 0;
-                        for (size_t y = cells[label - 1].y_min + 2; 
+                        for (int y = cells[label - 1].y_min + 2; 
                             y <= cells[label - 1].y_max - 2; y++){
                             sum += abs(255 - img[y][x]);
                         }
@@ -235,9 +235,9 @@ int label_image_dfs(unsigned char **img, int **labels,
                         cells[label-1].y_min = cells[label - 2].y_min;
                         cells[label-1].y_max = cells[label - 2].y_max;
 
-                        for (size_t x = cells[label-1].x_min; 
+                        for (int x = cells[label-1].x_min; 
                             x < cells[label-1].x_max; x++){
-                            for (size_t y = cells[label-1].y_min; 
+                            for (int y = cells[label-1].y_min; 
                                 y < cells[label-1].y_max; y++){
 
                                 if (labels[y][x] == label - 1)
@@ -303,7 +303,7 @@ int label_image_dfs(unsigned char **img, int **labels,
         i += s;
     }
 
-    for (size_t i = 0; i < label; i ++){
+    for (int i = 0; i < label; i ++){
         cells[i].label = i;
     }
 
@@ -720,8 +720,8 @@ char Same_families(struct family f1, struct family f2){
     return 1;
 }
 void Remove_same_families(struct family** all_families, int n){
-    for (size_t i = 0; i < n; i++){
-        size_t j = 0;
+    for (int i = 0; i < n; i++){
+        int j = 0;
         while (j < n && (*all_families)[i].completed != -1){
             if (  i != j && (*all_families)[j].completed != -1 
             && Same_families((*all_families)[i], (*all_families)[j]) ){
@@ -734,7 +734,7 @@ void Remove_same_families(struct family** all_families, int n){
 
 char contains(struct family f, int elt){
     for (size_t i = 0; i < f.size; i++){
-	if (f.tab[i].ind == elt)
+	if ((int)f.tab[i].ind == elt)
 	    return 1;
     }
     return 0;
@@ -743,14 +743,14 @@ char contains(struct family f, int elt){
 char Add_next_element(struct family** all_families, 
     struct Dist_with **families, int n, char second_call, struct Cell* cells){
     char changed = 0;
-    for (size_t i = 0; i < n; i++){
+    for (int i = 0; i < n; i++){
         struct family fam = (*all_families)[i];
         if (fam.completed == 0){
             changed = 1;
             double min = -1;
             size_t index = 0;
             for (size_t j = 0; j < fam.size; j++){ 
-                while (fam.tab[j].actual < n - 1 && 
+                while ((int)fam.tab[j].actual < n - 1 && 
             (contains(fam, families[fam.tab[j].ind][fam.tab[j].actual].index)
             || 
             (second_call == 1 && 
@@ -1402,6 +1402,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     *final_words = words;
 
     //clean everything
+
     for (int y = 0; y < h; y++)
     {
         free(gray[y]);
@@ -1420,7 +1421,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     free(all_families2);
 
     free(families);
-    free(centers);
+    //free(centers);
     free(gray);
     free(labels);
     free(cells);
