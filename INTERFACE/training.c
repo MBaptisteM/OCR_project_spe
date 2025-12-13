@@ -76,8 +76,7 @@ int training_screen(SDL_Window *window, SDL_Renderer **renderer)
     c->mutex = mtx;
     c->accuracy = accuracy;
     c->run = run;
-
-    load("/home/baptiste/OCR_project_spe/AI_OCR/weights.txt");
+    
     pthread_t thr;
     pthread_create(&thr, NULL, start_training, (void*)c);
 
