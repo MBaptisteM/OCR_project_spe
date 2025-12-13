@@ -34,7 +34,7 @@ float d1[H1], d2[H2], d3[OUTPUT];
 void* start_training(void* arg){
     struct call* c = (struct call*)arg;
     
-    load("/home/baptiste/OCR_project_spe/AI_OCR/weights.txt");
+    load("AI_OCR/weights.txt");
     *c->accuracy = accuracy_calcul();
     printf("changed\n");
 
@@ -135,7 +135,7 @@ float accuracy_calcul(){
     size_t correct = 0;
     for (size_t i = 0; i < 1792; i++) {
         char temp_path[256];
-        snprintf(temp_path, sizeof(temp_path), "%s/%zu.png", "/home/baptiste/OCR_project_spe/AI_OCR/training_data", i);
+        snprintf(temp_path, sizeof(temp_path), "%s/%zu.png", "AI_OCR/training_data", i);
         char r = get_character(temp_path);
         char expected = dict[i].value;
         if (r == expected)

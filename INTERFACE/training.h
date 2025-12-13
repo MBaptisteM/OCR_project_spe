@@ -5,7 +5,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include <err.h>
-#include "/home/baptiste/OCR_project_spe/AI_OCR/training.h"
+#include "../AI_OCR/training.h"
 
 void end_training(struct call* c);
 int training_screen(SDL_Window *window, SDL_Renderer **renderer);
