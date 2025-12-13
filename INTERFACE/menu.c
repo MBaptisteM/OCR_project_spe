@@ -23,7 +23,7 @@ void menu_initialize(SDL_Window **window, SDL_Renderer **renderer,
     if (!title_font)
         errx(EXIT_FAILURE, "fail open tittle.TTF");
 
-    SDL_Color blue = {11, 36, 189, 255};
+    SDL_Color blue = {11, 36, 189, 255}; 
 
     SDL_Surface *wordSurf = TTF_RenderText_Solid(title_font, "WORD", blue);
     SDL_Texture *wordTex = SDL_CreateTextureFromSurface(*renderer, wordSurf);
@@ -139,16 +139,11 @@ void menu_initialize(SDL_Window **window, SDL_Renderer **renderer,
     SDL_Texture *trainTex =
         SDL_CreateTextureFromSurface(*renderer, trainSurf);
 
-    SDL_Rect trainRect = {
-        (WIDTH - (int)(trainSurf->w * 1.6)) / 2.1,
-        200,
-        (int)(trainSurf->w * 1.7),
-        (int)(trainSurf->h * 4)
-    };
+    SDL_Rect trainRect = {WIDTH/2 - 500, 230, 450, 180 };
     SDL_RenderCopy(*renderer, buttonTex, NULL, &trainRect);
 
     SDL_Rect trainTextRect = {
-        (WIDTH - trainSurf->w) / 2 + 10,
+        WIDTH/2 - 450 + 40,
         trainRect.y + (trainRect.h - trainSurf->h) / 2,
         trainSurf->w,
         trainSurf->h
@@ -161,16 +156,11 @@ void menu_initialize(SDL_Window **window, SDL_Renderer **renderer,
     SDL_Texture *resolveTex =
         SDL_CreateTextureFromSurface(*renderer, resolveSurf);
 
-    SDL_Rect resolveRect = {
-        (WIDTH - (int)(resolveSurf->w * 1.6)) / 2.1,
-        290,
-        (int)(resolveSurf->w * 1.7),
-        (int)(resolveSurf->h * 4)
-    };
+    SDL_Rect resolveRect = {WIDTH/2 + 40, 230 , 450, 180 };
     SDL_RenderCopy(*renderer, buttonTex, NULL, &resolveRect);
 
     SDL_Rect resolveTextRect = {
-        (WIDTH - resolveSurf->w) / 2 + 10,
+        WIDTH/2 + 140,
         resolveRect.y + (resolveRect.h - resolveSurf->h) / 2,
         resolveSurf->w,
         resolveSurf->h
