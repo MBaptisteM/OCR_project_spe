@@ -76,10 +76,14 @@ int main(void)
 
     SDL_Texture *texture = NULL;
 
-    ImageItem *images = calloc(6, sizeof(ImageItem));
+    size_t nImages = count_files();
+    size_t nred = nImages;
+    if (nImages > 10)
+        nred = 10;
+    ImageItem *images = calloc(nred, sizeof(ImageItem));
     start_initialize(window, renderer, &texture, images);
 
-    int running = 7;
+    int running = nImages+1;
     int show_image = 0;   
     int selected = -1;
 
@@ -88,10 +92,10 @@ int main(void)
     {
         if (show_image == 0)
         {
-            start_redraw(renderer, images);
-            running = start_event_handler(window, images);
+            start_redraw(renderer, images, nImages);
+            running = start_event_handler(window, images, nred);
 
-            if (running >= 1 && running <= 6)
+            if (running >= 1 && running <= nred)
             {
                 selected = running - 1;
                 show_image = 1; 
@@ -124,7 +128,7 @@ int main(void)
 
     if (running == -1)
     {
-        start_clear(window, renderer, texture);
+        start_clear(window, renderer, texture, nImages, images);
         return EXIT_SUCCESS;
     }
 
@@ -133,7 +137,7 @@ int main(void)
     //--------------------------start pretreatement---------------------------- 
 
     char pict_path[200];
-    sprintf(pict_path, "../READ_GRID/images/%s.png", (images[selected].name));
+    sprintf(pict_path, "../READ_GRID/images/%s", (images[selected].name));
 
     SDL_Surface *converted = SDL_ConvertSurfaceFormat(img, 
         SDL_PIXELFORMAT_RGB888, 0);
@@ -343,7 +347,7 @@ int main(void)
     free(words->paths);
     free(words->words_sizes);
     free(words);
-    start_clear(window, renderer, texture);
+    start_clear(window, renderer, texture, nImages, images);
     return EXIT_SUCCESS;
 
 
