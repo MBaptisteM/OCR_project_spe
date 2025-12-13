@@ -4,6 +4,7 @@
 
 
 int main(int argc, char *argv[]){
+    /*
     if (argc < 2)
         errx(EXIT_FAILURE, "too few arguments for AI");
     if (atoi(argv[1]) == 0){
@@ -16,5 +17,6 @@ int main(int argc, char *argv[]){
         load("weights.txt");
         printf("character for %s is : %c\n", argv[2], get_character(argv[2]));
     }
+        */
     return EXIT_SUCCESS;
 }

@@ -31,6 +31,17 @@ float dW3[OUTPUT][H2], db3[OUTPUT];
 float d1[H1], d2[H2], d3[OUTPUT];
 
 
+void* start_training(void* arg){
+    struct call* c = (struct call*)arg;
+    
+    load("/home/baptiste/OCR_project_spe/AI_OCR/weights.txt");
+    *c->accuracy = accuracy_calcul();
+    printf("changed\n");
+
+    training(c->run, c->accuracy, c->mutex);
+
+    return NULL;
+}
 
 int save(const char *filename)
 {
@@ -120,60 +131,48 @@ int load(const char *filename)
     return 1;
 }
 
-
-float training(size_t num){
-    if (load("weights.txt"))
-        printf("Weights have been loaded\n");
-    else {
-        printf("Initialize new weights\n");
-        init_weights();
-    }
-
-    char** inputs_tab = calloc(num, sizeof(char*)); // allocation is correct for num samples
-    for (size_t i = 0; i < num; i++){
-        char* temp_path;
-        int test = asprintf(&temp_path, "%s/%zu.png", PATH, i);
-        inputs_tab[i] = extract(temp_path);
-
-    }
-    for (size_t i = 0; i < 500; i++){
-        for (size_t j = 0; j < num; j++){
-            forward(inputs_tab[j]);
-            backward(inputs_tab[j], (int)(dict[j].value - 'A'), 0.00005); //learning rate here
-        }
-        printf("iteration %zu ended\n", i);
-    }
-    for (size_t i = 0; i < num; i++)
-        free(inputs_tab[i]);
-    free(inputs_tab);
-
+float accuracy_calcul(){
     size_t correct = 0;
-
-    // Code pour afficher les résultats de chaque lettre et avoir le détail des probabilités.
-    printf("=== RESULTS OF ALL TRAINING SAMPLES ===\n");
-    for (size_t i = 0; i < num; i++) {
+    for (size_t i = 0; i < 1792; i++) {
         char temp_path[256];
-        snprintf(temp_path, sizeof(temp_path), "%s/%zu.png", PATH, i);
+        snprintf(temp_path, sizeof(temp_path), "%s/%zu.png", "/home/baptiste/OCR_project_spe/AI_OCR/training_data", i);
         char r = get_character(temp_path);
         char expected = dict[i].value;
         if (r == expected)
             correct++;
-        if (r != expected)
-            printf("Sample %zu -> %c (expected %c)\n", i, r, expected);
     }
 
-    float accuracy = 100.0f * correct / num;
-    printf("=== SUMMARY ===\n");
-    printf("Correct predictions: %zu/%zu (%.2f%%)\n", correct, num, accuracy);
-
-
-
-    if (save("weights.txt"))
-        printf("Weights have been saved\n");
-    else
-        printf("Failed to save weights\n");
-
+    float accuracy = 100.0f * correct / 1792;
+    
     return accuracy;
+}
+
+
+void training(char* running, float* accuracy, pthread_mutex_t mutex){
+    size_t num = 1792;
+
+    char** inputs_tab = calloc(num, sizeof(char*)); // allocation is correct for num samples
+    for (size_t i = 0; i < num; i++){
+        char* temp_path;
+        int test = asprintf(&temp_path, "%s/%zu.png", "/home/baptiste/OCR_project_spe/AI_OCR/training_data", i);
+        (void)test;
+        inputs_tab[i] = extract(temp_path);
+
+    }
+    while (*running){
+        for (size_t j = 0; j < num; j++){
+            if (*running == 0)
+                break;
+            forward(inputs_tab[j]);
+            backward(inputs_tab[j], (int)(dict[j].value - 'A'), 0.00005); //learning rate here
+        }
+        pthread_mutex_lock(&mutex);
+        *accuracy = accuracy_calcul();
+        pthread_mutex_unlock(&mutex);
+    }
+    for (size_t i = 0; i < num; i++)
+        free(inputs_tab[i]);
+    free(inputs_tab);
 }
 
 
