@@ -16,7 +16,7 @@ SRC = \
 	SOLVER/Solver.c
 OBJ = $(SRC:.c=.o)
 
-menu: $(OBJ)
+all: $(OBJ)
 	$(CC) -o $@ $(OBJ) $(LDFLAGS)
 
 %.o: %.c
