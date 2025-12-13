@@ -7,6 +7,6 @@ typedef struct {
     char value;
 } DictEntry;
 
-extern DictEntry dict[1791];
+extern DictEntry dict[1792];
 
 #endif

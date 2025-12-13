@@ -7,7 +7,7 @@ int main(int argc, char *argv[]){
     if (argc < 2)
         errx(EXIT_FAILURE, "too few arguments for AI");
     if (atoi(argv[1]) == 0){
-        training(1791);
+        while (training(1792) != 100);
     }
     else{
         if (argc < 3)

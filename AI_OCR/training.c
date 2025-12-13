@@ -121,7 +121,7 @@ int load(const char *filename)
 }
 
 
-void training(size_t num){
+float training(size_t num){
     if (load("weights.txt"))
         printf("Weights have been loaded\n");
     else {
@@ -136,7 +136,7 @@ void training(size_t num){
         inputs_tab[i] = extract(temp_path);
 
     }
-    for (size_t i = 0; i < 100; i++){
+    for (size_t i = 0; i < 500; i++){
         for (size_t j = 0; j < num; j++){
             forward(inputs_tab[j]);
             backward(inputs_tab[j], (int)(dict[j].value - 'A'), 0.00005); //learning rate here
@@ -172,6 +172,8 @@ void training(size_t num){
         printf("Weights have been saved\n");
     else
         printf("Failed to save weights\n");
+
+    return accuracy;
 }
 
 

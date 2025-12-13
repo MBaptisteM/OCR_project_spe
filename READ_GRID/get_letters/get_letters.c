@@ -284,7 +284,7 @@ int label_image_dfs(unsigned char **img, int **labels,
     {
         int y = cells[i].y_min;
         int s = 1;
-        int max_diff = 5; //abs(cells[i].y_max - cells[i].y_min);
+        int max_diff = 10; //abs(cells[i].y_max - cells[i].y_min);
         while (i + s < label && abs(y - cells[i + s].y_min) < max_diff)
             s++;
         
