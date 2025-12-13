@@ -19,6 +19,7 @@ void menu_initialize(SDL_Window **window, SDL_Renderer **renderer,
     SDL_RenderCopy(*renderer, background, NULL, NULL);*/
 
     // ---------- tittle ----------
+    
     TTF_Font *title_font = TTF_OpenFont("INTERFACE/elements/tittle.TTF", 80);
     if (!title_font)
         errx(EXIT_FAILURE, "fail open tittle.TTF");
