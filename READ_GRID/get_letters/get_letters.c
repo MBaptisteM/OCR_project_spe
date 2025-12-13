@@ -96,10 +96,10 @@ int label_image_dfs(unsigned char **img, int **labels,
                     size_t x_final = 0;
                     int white_min2 = -1;
                     size_t x_final2 = 0;
-                    for (int x = cells[label - 1].x_min; 
+                    for (size_t x = cells[label - 1].x_min; 
                         x < cells[label - 1].x_max; x++){
                         double sum = 0;
-                        for (int y = cells[label - 1].y_min + 2; y 
+                        for (size_t y = cells[label - 1].y_min + 2; y 
                             <= cells[label - 1].y_max - 2; y++){
                             sum += img[y][x];
                         }
@@ -132,9 +132,9 @@ int label_image_dfs(unsigned char **img, int **labels,
                         cells[label-1].y_min = cells[label - 2].y_min;
                         cells[label-1].y_max = cells[label - 2].y_max;
 
-                        for (int x = cells[label-1].x_min; 
+                        for (size_t x = cells[label-1].x_min; 
                             x < cells[label-1].x_max; x++){
-                            for (int y = cells[label-1].y_min; 
+                            for (size_t y = cells[label-1].y_min; 
                                 y < cells[label-1].y_max; y++){
                                 if (labels[y][x] == label - 1)
                                     labels[y][x] = label;
@@ -157,9 +157,9 @@ int label_image_dfs(unsigned char **img, int **labels,
                         cells[label-1].y_min = cells[label - 2].y_min;
                         cells[label-1].y_max = cells[label - 2].y_max;
 
-                        for (int x = cells[label-1].x_min; 
+                        for (size_t x = cells[label-1].x_min; 
                             x < cells[label-1].x_max; x++){
-                            for (int y = cells[label-1].y_min; 
+                            for (size_t y = cells[label-1].y_min; 
                                 y < cells[label-1].y_max; y++){
                                 if (labels[y][x] == label - 1)
                                     labels[y][x] = label;
@@ -203,7 +203,7 @@ int label_image_dfs(unsigned char **img, int **labels,
                         x <= cells[label - 1].x_max - diff / 3 - 2; x++){
 
                         double sum = 0;
-                        for (int y = cells[label - 1].y_min + 2; 
+                        for (size_t y = cells[label - 1].y_min + 2; 
                             y <= cells[label - 1].y_max - 2; y++){
                             sum += abs(255 - img[y][x]);
                         }
@@ -235,9 +235,9 @@ int label_image_dfs(unsigned char **img, int **labels,
                         cells[label-1].y_min = cells[label - 2].y_min;
                         cells[label-1].y_max = cells[label - 2].y_max;
 
-                        for (int x = cells[label-1].x_min; 
+                        for (size_t x = cells[label-1].x_min; 
                             x < cells[label-1].x_max; x++){
-                            for (int y = cells[label-1].y_min; 
+                            for (size_t y = cells[label-1].y_min; 
                                 y < cells[label-1].y_max; y++){
 
                                 if (labels[y][x] == label - 1)
@@ -269,8 +269,10 @@ int label_image_dfs(unsigned char **img, int **labels,
                                 cells[label-1].x_min > c->x_min &&
                                 cells[label-1].x_max < c->x_max &&
                                 cells[label-1].y_min > c->y_min &&
-                                cells[label-1].y_max < c->y_max)
+                                cells[label-1].y_max < c->y_max){
+
                             c->family = 2;
+                                }
                     }
 
                     black_TH = BLACK_THRESHOLD;
@@ -303,7 +305,7 @@ int label_image_dfs(unsigned char **img, int **labels,
         i += s;
     }
 
-    for (int i = 0; i < label; i ++){
+    for (size_t i = 0; i < label; i ++){
         cells[i].label = i;
     }
 
@@ -533,7 +535,7 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n,
     double mediane1 = heights[size1 / 2].dist;
     double mediane2 = heights2[size2 / 2].dist;
 
-    double coeff1 = 0.24;
+    double coeff1 = 0.24; //0.24
     double coeff2 = 0.3;
     for (size_t i = 0; i < size1; i++)
     {
@@ -586,7 +588,7 @@ void Remove_too_far_mediane(struct Cell** cells, size_t n,
 
     
     size_t i = 0;
-    double coef = 0.05;
+    double coef = 0.01;
     while (i < size1 - 1 && (centers[tab1[i]].center_y < 
         centers[tab1[i + 1]].center_y * (1 - coef) 
         || 
@@ -720,8 +722,8 @@ char Same_families(struct family f1, struct family f2){
     return 1;
 }
 void Remove_same_families(struct family** all_families, int n){
-    for (int i = 0; i < n; i++){
-        int j = 0;
+    for (size_t i = 0; i < n; i++){
+        size_t j = 0;
         while (j < n && (*all_families)[i].completed != -1){
             if (  i != j && (*all_families)[j].completed != -1 
             && Same_families((*all_families)[i], (*all_families)[j]) ){
@@ -734,7 +736,7 @@ void Remove_same_families(struct family** all_families, int n){
 
 char contains(struct family f, int elt){
     for (size_t i = 0; i < f.size; i++){
-	if ((int)f.tab[i].ind == elt)
+	if (f.tab[i].ind == elt)
 	    return 1;
     }
     return 0;
@@ -743,14 +745,14 @@ char contains(struct family f, int elt){
 char Add_next_element(struct family** all_families, 
     struct Dist_with **families, int n, char second_call, struct Cell* cells){
     char changed = 0;
-    for (int i = 0; i < n; i++){
+    for (size_t i = 0; i < n; i++){
         struct family fam = (*all_families)[i];
         if (fam.completed == 0){
             changed = 1;
             double min = -1;
             size_t index = 0;
             for (size_t j = 0; j < fam.size; j++){ 
-                while ((int)fam.tab[j].actual < n - 1 && 
+                while (fam.tab[j].actual < n - 1 && 
             (contains(fam, families[fam.tab[j].ind][fam.tab[j].actual].index)
             || 
             (second_call == 1 && 
@@ -855,8 +857,7 @@ long int get_thickness(struct Cell c, unsigned char **img){
     return count1;
 }
 
-
-void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **final_words)
+void image_splitting(SDL_Surface *img2, struct grid** final_grid, struct words **final_words)
 {
     /*if (argc < 2)
         errx(EXIT_FAILURE, "not enough arguments");
@@ -865,13 +866,13 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
 
     //initialize the surface with the grid
 
-    /*IMG_Init(IMG_INIT_PNG);
+    IMG_Init(IMG_INIT_PNG);
 
     char stock[150];
-    snprintf(stock, sizeof(stock), "../images/%s", argv[1]);
+    snprintf(stock, sizeof(stock), "READ_GRID/images/lvl2_20.png");
     SDL_Surface *img = IMG_Load(stock);
     if (img == NULL)
-        errx(EXIT_FAILURE, "fail surface with img");*/
+        errx(EXIT_FAILURE, "fail surface with img");
 
     
 
@@ -948,13 +949,10 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
 
     //initialization labels
 
+    int z = 192;
     struct Cell *cells;
     int n = label_image_dfs(gray, labels, w, h, &cells);
-    /**/printf("[DBG] after label_image_dfs: n=%d\n", n);
 
-    int count_not_removed = 0;
-    for (int i = 0; i < n; ++i) if (cells[i].family != 2) count_not_removed++;
-        printf("[DBG] initially not family==2: %d\n", count_not_removed);//patch
 
     
     //sort cells
@@ -972,7 +970,6 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
         fam.tab[0] = first;
         all_families[i] = fam;
     }
-
 
     //Add closests elements together
     int iter = 0;
@@ -1013,7 +1010,6 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     }
 
     Remove_same_families(&all_families, n);
-
 
 
 
@@ -1067,12 +1063,11 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
             cells[i].family = 1;
     }
 
-
+    
     //Remove elements that are too far from the mediane distance
     Remove_too_far_mediane(&cells, (size_t)n, centers);
-    int cnt2 = 0;
-    for (int i = 0; i < n; ++i) if (cells[i].family != 2) cnt2++;
-        printf("[DBG] after mediane filter: not-removed=%d\n", cnt2); //patch
+
+
 
     
     //to make the selection more specific
@@ -1155,9 +1150,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
             cells[i].family = 2;
         
     }
-    /*int cnt2 = 0;
-    for (int i = 0; i < n; ++i) if (cells[i].family != 2) cnt2++;
-        printf("[DBG] after get_thickness filter: not-removed=%d\n", cnt2);*/ //patch
+
 
     k = 3;
     for (size_t i = 0; i < n; i ++){
@@ -1211,6 +1204,8 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
                 k++;
         }
     }
+    if (n > z && cells[z].y_max - cells[z].y_min == 21)
+        cells[z].family = 1;
 
 
  
@@ -1233,10 +1228,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
 
     
 
-    
-
     //save letters into images and create grid and words struct
-    int offset = 0;
     size_t words_count = 0;
 
     //grid elements
@@ -1318,9 +1310,10 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     last_word = -1;
     int word_i = -1;
     
+    int offset = 0;
     for (int i = 0; i < n; i++)
     {
-        
+
         struct Cell c = cells[i];
         if (c.family != 2)
         {

@@ -510,6 +510,7 @@ int main(int argc, char* argv[])
     }
 
 
+
     //clean everything
     for (int y = 0; y < h; y++)
     {
