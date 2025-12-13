@@ -5,10 +5,10 @@
 #define HEIGHT 600
 
 void end_training(struct call* c){
-    pthread_mutex_lock(&c->mutex);
-    c->run = 0;
+    pthread_mutex_lock(c->mutex);
+    *c->run = 0;
     save("weights.txt");
-    pthread_mutex_unlock(&c->mutex);
+    pthread_mutex_unlock(c->mutex);
 }
 int training_screen(SDL_Window *window, SDL_Renderer **renderer)
 {
@@ -47,7 +47,7 @@ int training_screen(SDL_Window *window, SDL_Renderer **renderer)
 
     SDL_Rect stopRect = {
         (WIDTH - stopSurf->w * 1.6) / 2.16,
-        220,
+        400,
         stopSurf->w * 1.9,
         stopSurf->h * 4.1
     };
@@ -70,8 +70,8 @@ int training_screen(SDL_Window *window, SDL_Renderer **renderer)
     char* run = malloc(sizeof(char));
     *run = 1;
 
-    pthread_mutex_t mtx;
-    pthread_mutex_init(&mtx, NULL);
+    pthread_mutex_t *mtx = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(mtx, NULL);
 
     c->mutex = mtx;
     c->accuracy = accuracy;
@@ -80,8 +80,60 @@ int training_screen(SDL_Window *window, SDL_Renderer **renderer)
     pthread_t thr;
     pthread_create(&thr, NULL, start_training, (void*)c);
 
+    SDL_Color blue = {11, 36, 189, 255};
+    TTF_Font *acc_font = TTF_OpenFont("INTERFACE/elements/text.TTF", 40);
+        if (!acc_font)
+            errx(EXIT_FAILURE, "fail open text.TTF");
+    SDL_Surface *acc_fixed =
+    TTF_RenderText_Solid(acc_font, "Accuracy : ", blue);
+    SDL_Texture *acc_fixedTex =
+        SDL_CreateTextureFromSurface(*renderer, acc_fixed);
+    SDL_Rect acc_fixedRect = {
+        250,
+        HEIGHT/2,
+        acc_fixed->w,
+        acc_fixed->h
+    };
+
     while (running)
     {
+        //SDL_RenderCopy(renderer, background, NULL, NULL);
+        SDL_SetRenderDrawColor(*renderer, 236, 224, 197, 255);
+        SDL_RenderClear(*renderer);
+        
+        //--------------------------display accuracy---------------------------
+        SDL_RenderCopy(*renderer, acc_fixedTex, NULL, &acc_fixedRect);
+
+        char acc_value[20];
+        pthread_mutex_lock(c->mutex);
+        float acc_copy = *c->accuracy;
+        pthread_mutex_unlock(c->mutex);
+        sprintf(acc_value, "%.1f / 100", acc_copy);
+        SDL_Surface *accSurf =
+            TTF_RenderText_Solid(acc_font,
+                                acc_value,
+                                blue);
+        if(!accSurf)
+            continue;
+        SDL_Texture *accTex =
+            SDL_CreateTextureFromSurface(*renderer, accSurf);
+        if(!accTex)
+            continue;
+        SDL_Rect accRect = {
+            550,
+            HEIGHT/2,
+            accSurf->w,
+            accSurf->h
+        };
+        SDL_RenderCopy(*renderer, accTex, NULL, &accRect);
+        SDL_RenderCopy(*renderer, txt, NULL, &txtRect);
+        SDL_RenderCopy(*renderer, buttonTex, NULL, &stopRect);
+        SDL_RenderCopy(*renderer, stopTxt, NULL, &stopTxtRect);
+        SDL_RenderPresent(*renderer);
+        SDL_FreeSurface(accSurf);
+        SDL_DestroyTexture(accTex);
+        SDL_Delay(16);
+
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT){
@@ -103,18 +155,12 @@ int training_screen(SDL_Window *window, SDL_Renderer **renderer)
             }
         }
 
-        printf("acc = %.2f\n", *c->accuracy);
-
-        //SDL_RenderCopy(renderer, background, NULL, NULL);
-        SDL_SetRenderDrawColor(*renderer, 236, 224, 197, 255);
-        SDL_RenderClear(*renderer);
-        SDL_RenderCopy(*renderer, txt, NULL, &txtRect);
-        SDL_RenderCopy(*renderer, buttonTex, NULL, &stopRect);
-        SDL_RenderCopy(*renderer, stopTxt, NULL, &stopTxtRect);
-        SDL_RenderPresent(*renderer);
+        
     }
+    pthread_join(thr, NULL);
 
-    pthread_mutex_destroy(&c->mutex);
+    pthread_mutex_destroy(c->mutex);
+    free(c->mutex);
     free(c->accuracy);
     free(c->run);
     free(c);
@@ -124,8 +170,11 @@ int training_screen(SDL_Window *window, SDL_Renderer **renderer)
     SDL_DestroyTexture(txt);
     SDL_DestroyTexture(stopTxt);
     SDL_DestroyTexture(buttonTex);
+    SDL_FreeSurface(acc_fixed);
+    SDL_DestroyTexture(acc_fixedTex);
     //SDL_DestroyTexture(background);
     TTF_CloseFont(big);
+    TTF_CloseFont(acc_font);
 
     return EXIT_SUCCESS;
 }

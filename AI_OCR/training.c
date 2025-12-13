@@ -36,7 +36,6 @@ void* start_training(void* arg){
     
     load("AI_OCR/weights.txt");
     *c->accuracy = accuracy_calcul();
-    printf("changed\n");
 
     training(c->run, c->accuracy, c->mutex);
 
@@ -148,13 +147,13 @@ float accuracy_calcul(){
 }
 
 
-void training(char* running, float* accuracy, pthread_mutex_t mutex){
+void training(char* running, float* accuracy, pthread_mutex_t *mutex){
     size_t num = 1792;
 
     char** inputs_tab = calloc(num, sizeof(char*)); // allocation is correct for num samples
     for (size_t i = 0; i < num; i++){
         char* temp_path;
-        int test = asprintf(&temp_path, "%s/%zu.png", "/home/baptiste/OCR_project_spe/AI_OCR/training_data", i);
+        int test = asprintf(&temp_path, "%s/%zu.png", "AI_OCR/training_data", i);
         (void)test;
         inputs_tab[i] = extract(temp_path);
 
@@ -166,9 +165,9 @@ void training(char* running, float* accuracy, pthread_mutex_t mutex){
             forward(inputs_tab[j]);
             backward(inputs_tab[j], (int)(dict[j].value - 'A'), 0.00005); //learning rate here
         }
-        pthread_mutex_lock(&mutex);
+        pthread_mutex_lock(mutex);
         *accuracy = accuracy_calcul();
-        pthread_mutex_unlock(&mutex);
+        pthread_mutex_unlock(mutex);
     }
     for (size_t i = 0; i < num; i++)
         free(inputs_tab[i]);

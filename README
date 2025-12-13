@@ -1,55 +1,8 @@
-AI_NXOR :
-	This folder contains : 
-		-AInxor.c (the c programm that contains the AI for A.B+!A.!B), 
-		-AInxor.h (the header of AInxor.c), 
-		-Makefile (the Makefile that contains the commands to execute the program).
-
-	How to use : 
-		-Write "make AInxor" to get the files AInxor.o and AInxor.exe
-		-Write "./AInxor" to execute the file AInxor.exe, you can also add up to three parameters :
-			(parameters : 1 -> int max_gen (N*) | 2 -> double learning rate (]0,1]) | 3 -> int error_goal (num of nubers after .) (N*))
-
-	The outputs :
-		Execute the .exe file will print 3 parts:
-			-A "Training" part where it is possible to see the errors during the training and the generation associated.
-			-A "Final" part where it is possible to see the value of each weight and bias of the final neuronal network.
-			-A "Tests" part where it is possible to see the results with all possible entries and if the result is right (success = True).
-		After an execution, 
-			the first line printed remember how to use parameters,
-			the last line printed tell to the user if the .png file has been generated properly or how to download .dot.
-		The .png file "network.png" represent the neuronal network with every node, layer and weight.
-
-SOLVER :
-	This folder contains :
-		-Solver.c (the c program that contains the grid solver),
-		-Solver.h (the header of Solver.c),
-		-Makefile (the Makefile that contains the commands to execute the program).
-
-	How to use :
-		-Write "make Solver" to get the files Solver.o and Solver.exe
-		-Write "./Solver" to execute the file Solver.exe, you need also add up to two parameters :
-			(parameters : 1 -> char filename (the initial grid) | 2 -> char word (the word to find))
-
-	The outputs :
-		Execute the .exe file will print the result of the search :
-		-If the word is found, it will print the word and the coordinates of the first and last letter of the word.
-		-If the word is not found, it will print "Not found".
-
-READ_GRID :
-    INIT :
-        This folder contains :
-            -Init.c (the c program that contains main function and other functions (binarize, rotate...),
-            -Pixel.c (the c program that contains the functions to manage pixels),
-            -Pixel.h (the header of Pixel.c),
-            -Makefile (the Makefile that contains the commands to execute the program).
-
-        How to use :
-            -Write "make init" to get the files init.o and init.exe
-            -Write "./init" to execute the file init.exe, you need also add up to two parameters :
-                (parameters : 1 -> char filename (the initial grid picture) | 2 -> char angle (the angle for rotation))
-
-        The outputs :
-            Execute the .exe file will make few things in the original grid picture :
-            -It will binarize the grid (the colors will be only black, white or grey) using the functions inside Pixel.c.
-            -It will rotate the grid if needed.
+How to use our OCR ?
+First, type "make all" in your terminal. Then, execute the ocr file using ./all without any arguments.
+The first menu appears and with it, two buttons. 
+For training you AI, click on the training button. A new window appears and you will be able to see the training of your AI. To stop the training, click on the stop button. The training will automatically be saved. You then will be back on the first menu window.
+Now, if you want to resolve a grid, the picture you want must be in the images folder located in the READ_GRID folder. 
+If you do not have any pictures, nothing will appear. Between one and ten, they will all be displayed. However, if you have more than ten pictures, only the ten firsts will be displayed.
+Now, choose the image you want, click on it and within seconds, the results will be displayed ! All the words found will be marked by a colored line in the grid. The results are also saved in your files with the name "results.png" and you'll also find the grid of your image written in a txt file under the name "grid_solver.txt".
 

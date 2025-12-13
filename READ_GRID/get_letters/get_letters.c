@@ -857,7 +857,7 @@ long int get_thickness(struct Cell c, unsigned char **img){
     return count1;
 }
 
-void image_splitting(SDL_Surface *img2, struct grid** final_grid, struct words **final_words)
+void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **final_words)
 {
     /*if (argc < 2)
         errx(EXIT_FAILURE, "not enough arguments");
@@ -866,13 +866,13 @@ void image_splitting(SDL_Surface *img2, struct grid** final_grid, struct words *
 
     //initialize the surface with the grid
 
-    IMG_Init(IMG_INIT_PNG);
+    // IMG_Init(IMG_INIT_PNG);
 
-    char stock[150];
-    snprintf(stock, sizeof(stock), "READ_GRID/images/lvl2_20.png");
-    SDL_Surface *img = IMG_Load(stock);
-    if (img == NULL)
-        errx(EXIT_FAILURE, "fail surface with img");
+    // char stock[150];
+    // snprintf(stock, sizeof(stock), "READ_GRID/images/lvl2_20.png");
+    // SDL_Surface *img = IMG_Load(stock);
+    // if (img == NULL)
+    //     errx(EXIT_FAILURE, "fail surface with img");
 
     
 
