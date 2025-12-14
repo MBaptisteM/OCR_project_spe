@@ -24,4 +24,4 @@ all: $(OBJ)
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f $(OBJ) menu solver_grid.txt result.png
+	rm -f $(OBJ) all solver_grid.txt result.png
