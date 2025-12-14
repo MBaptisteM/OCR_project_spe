@@ -1260,7 +1260,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
         }
             
     }
-    printf("grid size : %zu\n",  gridtemp->size);
+
     gridtemp->letters = calloc(gridtemp->size, sizeof(struct letters));
     if(gridtemp->letters == NULL)
         errx(EXIT_FAILURE, "fail realloc or calloc grid->letters");

@@ -105,7 +105,6 @@ void start_initialize(SDL_Window *window, SDL_Renderer *renderer,
     if (!imgNames || !imgPaths)
         errx(EXIT_FAILURE, "malloc failed");
 
-    printf("n : %zu\n", n);
     DIR *d;
     struct dirent *dir;
     d = opendir("READ_GRID/images");
