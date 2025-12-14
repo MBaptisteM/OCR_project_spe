@@ -751,7 +751,7 @@ char Add_next_element(struct family** all_families,
             changed = 1;
             double min = -1;
             size_t index = 0;
-            for (int j = 0; j < fam.size; j++){ 
+            for (size_t j = 0; j < fam.size; j++){ 
                 while ((int)fam.tab[j].actual < n - 1 && 
             (contains(fam, families[fam.tab[j].ind][fam.tab[j].actual].index)
             || 
@@ -762,7 +762,7 @@ char Add_next_element(struct family** all_families,
             cells[families[fam.tab[j].ind][fam.tab[j].actual].index].family
             == 2))))
                     fam.tab[j].actual ++;
-                if (fam.tab[j].actual < n - 1 && (min == -1 || 
+                if ((int)fam.tab[j].actual < n - 1 && (min == -1 || 
                     families[fam.tab[j].ind][fam.tab[j].actual].dist < min)){
                     min = families[fam.tab[j].ind][fam.tab[j].actual].dist;
                     index = families[fam.tab[j].ind][fam.tab[j].actual].index;
@@ -964,7 +964,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     
     //Initialize the families
     struct family* all_families = calloc(n, sizeof(struct family));
-    for (size_t i = 0 ;i < n; i++){
+    for (int i = 0 ;i < n; i++){
         struct family fam = {0,calloc(n, sizeof(struct fam_elt)),1,0};
         struct fam_elt first = {0,i};
         fam.tab[0] = first;
@@ -989,7 +989,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     // (grid and elements containing other elements)
     int* to_remove = calloc(n,sizeof(int));
     size_t sizeRemove = 0;
-    for (size_t i = 0; i < n; i++){
+    for (int i = 0; i < n; i++){
         if (cells[i].family == 2){
             to_remove[sizeRemove] = i;
             sizeRemove++;
@@ -998,7 +998,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     
     //Order 66 (use the spies as traitors) 
     // (you can only trust yoursefl and other letters)
-    for (size_t i = 0; i < n; i++){
+    for (int i = 0; i < n; i++){
         size_t k = 0;
         
         while (k < sizeRemove && all_families[i].completed != -1){
@@ -1017,7 +1017,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     size_t max_ind = 0;
     double max_size = 0;
     double coef = 0.001;
-    for (size_t i = 0; i < n; i ++){
+    for (int i = 0; i < n; i ++){
         if (all_families[i].completed != -1 && 
             all_families[i].size/(all_families[i].max_dist * coef) > max_size){
 
@@ -1035,7 +1035,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
 
 
     //Remove every families that contains an element of the grid
-    for (size_t i = 0; i < n; i++ ){
+    for (int i = 0; i < n; i++ ){
         size_t j = 0;
         while (j < all_families[i].size && all_families[i].completed != -1){
             if (cells[all_families[i].tab[j].ind].family == 1)
@@ -1048,7 +1048,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
 
     //Group the elements by family
     int k = 3;
-    for (size_t i = 0; i < n; i ++){
+    for (int i = 0; i < n; i ++){
         if (all_families[i].completed != -1){
             for (size_t j = 0; j < all_families[i].size; j++ ){
                 cells[all_families[i].tab[j].ind].family = k;
@@ -1058,7 +1058,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     }
 
 
-    for (size_t i = 0; i < n; i++){
+    for (int i = 0; i < n; i++){
         if (cells[i].family == 0)
             cells[i].family = 1;
     }
@@ -1073,7 +1073,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     //to make the selection more specific
     struct family* all_families2 = calloc(n, sizeof(struct family));
 
-    for (size_t i = 0 ;i < n; i++){
+    for (int i = 0 ;i < n; i++){
         if (cells[i].family != 1 && cells[i].family != 2){
             struct family fam = {0,calloc(n, sizeof(struct fam_elt)),1,0};
             struct fam_elt first = {0,i};
@@ -1103,11 +1103,11 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
     Remove_same_families(&all_families2, n);
 
 
-    for (size_t i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         if (all_families2[i].completed == -1)
             continue;
 
-        for (size_t j = i + 1; j < n; j++) {
+        for (int j = i + 1; j < n; j++) {
             if (all_families2[j].completed == -1)
                 continue;
 
@@ -1153,7 +1153,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
 
 
     k = 3;
-    for (size_t i = 0; i < n; i ++){
+    for (int i = 0; i < n; i ++){
         if (all_families2[i].completed != -1){
             int num = 0;
             for (size_t j = 0; j < all_families2[i].size; j++ ){
@@ -1169,19 +1169,17 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
 
 
     //check if a word contains to few letters
-    int actual = -1;
     int tab[n];
-    int num = 0;
-    for (size_t i = 0; i < n; i++){
+    for (int i = 0; i < n; i++){
         tab[i] = 0;
     }
-    for (size_t i = 0; i < n; i++){
+    for (int i = 0; i < n; i++){
         if (cells[i].family != 1 && cells[i].family != 2)
             tab[cells[i].family]++;
     }
-    for (size_t i = 3; i < n; i++){
+    for (int i = 3; i < n; i++){
         if (tab[i] < 3){
-            for (size_t j = 0; j < n; j++){
+            for (int j = 0; j < n; j++){
                 if (cells[j].family == i){
                     cells[j].family = 2;
                 }
@@ -1191,7 +1189,7 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
 
 
     k = 3;
-    for (size_t i = 0; i < n; i ++){
+    for (int i = 0; i < n; i ++){
         if (all_families2[i].completed != -1){
             int num = 0;
             for (size_t j = 0; j < all_families2[i].size; j++ ){
@@ -1401,14 +1399,14 @@ void image_splitting(SDL_Surface *img, struct grid** final_grid, struct words **
         free(gray[y]);
         free(labels[y]);
     }
-    for (size_t i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         free(families[i]);
     }
-    for (size_t i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         free(all_families[i].tab);
     }
     free(all_families);
-    for (size_t i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         free(all_families2[i].tab);
     }
     free(all_families2);
