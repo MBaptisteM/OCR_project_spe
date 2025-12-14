@@ -18,6 +18,7 @@ void restart_self(char **argv)
 
 int main(int argc, char **argv)
 {
+    (void)argc;
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         errx(EXIT_FAILURE, "SDL_Init failed");
     if (TTF_Init() < 0)
@@ -92,7 +93,7 @@ int main(int argc, char **argv)
             start_redraw(renderer, images, nImages);
             running = start_event_handler(window, images, nred);
 
-            if (running >= 1 && running <= nred)
+            if (running >= 1 && running <= (int)nred)
             {
                 selected = running - 1;
                 show_image = 1;

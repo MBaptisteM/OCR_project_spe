@@ -159,12 +159,12 @@ void start_initialize(SDL_Window *window, SDL_Renderer *renderer,
         }  
         else 
             images[i].rect.y = 120 + curr_row * (imgH + 50);
-        if (i >= cols && imp)
+        if ((int)i >= cols && imp)
             images[i].rect.x = imgW/2 +margin + curr_col * (imgW + spacing);
         else if (cols != 1)
             images[i].rect.x = margin + curr_col * (imgW + spacing);
         
-            images[i].rect.w = imgW;
+        images[i].rect.w = imgW;
         images[i].rect.h = imgH;
         images[i].name = imgNames[i];
     }
@@ -254,6 +254,8 @@ void start_redraw(SDL_Renderer *renderer, ImageItem *images, size_t n)
 void start_clear(SDL_Window *window, SDL_Renderer *renderer, 
     SDL_Texture *texture, size_t n, ImageItem *images)
 {
+    (void)n;
+    (void)images;
     if(texture)
         SDL_DestroyTexture(texture);
     if(renderer)
