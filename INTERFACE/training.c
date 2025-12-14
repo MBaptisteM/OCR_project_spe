@@ -7,7 +7,7 @@
 void end_training(struct call* c){
     pthread_mutex_lock(c->mutex);
     *c->run = 0;
-    save("weights.txt");
+    save("../AI_OCR/weights.txt");
     pthread_mutex_unlock(c->mutex);
 }
 int training_screen(SDL_Window *window, SDL_Renderer **renderer)
