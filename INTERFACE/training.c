@@ -62,12 +62,17 @@ int training_screen(SDL_Window *window, SDL_Renderer **renderer)
     
 
     struct call* c = malloc(sizeof(struct call));
-    
+    if (c == NULL)
+        errx(EXIT_FAILURE, "issue when creating the call");
 
     float* accuracy = malloc(sizeof(float));
+    if (accuracy == NULL)
+        errx(EXIT_FAILURE, "issue when creating the accuracy");
     *accuracy = 0;
 
     char* run = malloc(sizeof(char));
+    if (run == NULL)
+        errx(EXIT_FAILURE, "issue when creating the run");
     *run = 1;
 
     pthread_mutex_t *mtx = malloc(sizeof(pthread_mutex_t));
@@ -78,7 +83,8 @@ int training_screen(SDL_Window *window, SDL_Renderer **renderer)
     c->run = run;
     
     pthread_t thr;
-    pthread_create(&thr, NULL, start_training, (void*)c);
+    if (pthread_create(&thr, NULL, start_training, (void*)c))
+        errx(EXIT_FAILURE, "issue when creating the thread");
 
     SDL_Color blue = {11, 36, 189, 255};
     TTF_Font *acc_font = TTF_OpenFont("INTERFACE/elements/text.TTF", 40);
