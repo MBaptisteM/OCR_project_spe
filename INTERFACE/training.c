@@ -8,8 +8,10 @@ void end_training(struct call* c){
     pthread_mutex_lock(c->mutex);
     *c->run = 0;
     save("../AI_OCR/weights.txt");
+    generate_network();
     pthread_mutex_unlock(c->mutex);
 }
+
 int training_screen(SDL_Window *window, SDL_Renderer **renderer)
 {
     (void)window;
@@ -101,8 +103,7 @@ int training_screen(SDL_Window *window, SDL_Renderer **renderer)
         acc_fixed->h
     };
 
-    while (running)
-    {
+    while (running){
         //SDL_RenderCopy(renderer, background, NULL, NULL);
         SDL_SetRenderDrawColor(*renderer, 236, 224, 197, 255);
         SDL_RenderClear(*renderer);
@@ -140,8 +141,7 @@ int training_screen(SDL_Window *window, SDL_Renderer **renderer)
         SDL_DestroyTexture(accTex);
         SDL_Delay(16);
 
-        while (SDL_PollEvent(&event))
-        {
+        while (SDL_PollEvent(&event)){
             if (event.type == SDL_QUIT){
                 end_training(c);
                 return -1;

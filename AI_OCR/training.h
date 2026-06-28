@@ -22,5 +22,6 @@ void backward(char* inputs, int label, float lr);
 char get_character(char* path);
 float accuracy_calcul();
 void* start_training(void* arg);
+void generate_network();
 
 #endif

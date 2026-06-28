@@ -42,8 +42,7 @@ void* start_training(void* arg){
     return NULL;
 }
 
-int save(const char *filename)
-{
+int save(const char *filename){
     FILE *f = fopen(filename, "w");
     if (f == 0)
         return 0;
@@ -73,13 +72,13 @@ int save(const char *filename)
     }
 
     fclose(f);
+
     return 1;
 }
 
 
 
-int load(const char *filename)
-{
+int load(const char *filename){
     FILE *f = fopen(filename, "r");
     if (f == 0)
         return 0;
@@ -383,4 +382,128 @@ void backward(char* inputs, int label, float lr)
         for (int j = 0; j < H2; j++)
             w[j] -= lr * dw[j];
     }
+}
+
+
+#include <math.h>
+
+#define LOG_BASE 1.1f
+
+float log_custom(float x) {
+    return logf(x) / logf(LOG_BASE);
+}
+
+void generate_network(){
+    FILE *f = fopen("network.dot", "w");
+    if (f == 0)
+        return;
+
+    fprintf(f, "digraph neural_net {\n");   
+    fprintf(f, "    rankdir=LR;\n");    
+    fprintf(f, "    bgcolor=\"transparent\";\n"); 
+    fprintf(f, "    splines=false;\n"); 
+    fprintf(f, "    node [shape=circle, style=filled, fontname=\"Arial\"];\n\n");
+
+    // Calculate node strides
+    int count_i  = (int)log_custom((float)INPUT_SIZE);
+    int stride_i = (count_i > 0) ? (INPUT_SIZE / count_i) : 1;
+    if (stride_i < 1) stride_i = 1;
+
+    int count_h1  = (int)log_custom((float)H1);
+    int stride_h1 = (count_h1 > 0) ? (H1 / count_h1) : 1;
+    if (stride_h1 < 1) stride_h1 = 1;
+
+    int count_h2  = (int)log_custom((float)H2);
+    int stride_h2 = (count_h2 > 0) ? (H2 / count_h2) : 1;
+    if (stride_h2 < 1) stride_h2 = 1;
+
+    // Calculate edge strides based on total potential connections per layer pair
+    int total_edges1 = count_i * count_h1;
+    int log_edges1   = (int)log_custom((float)total_edges1);
+    int stride_edge1 = (log_edges1 > 0) ? (total_edges1 / log_edges1) : 1;
+    if (stride_edge1 < 1) stride_edge1 = 1;
+
+    int total_edges2 = count_h1 * count_h2;
+    int log_edges2   = (int)log_custom((float)total_edges2);
+    int stride_edge2 = (log_edges2 > 0) ? (total_edges2 / log_edges2) : 1;
+    if (stride_edge2 < 1) stride_edge2 = 1;
+
+    int total_edges3 = count_h2 * OUTPUT;
+    int log_edges3   = (int)log_custom((float)total_edges3);
+    int stride_edge3 = (log_edges3 > 0) ? (total_edges3 / log_edges3) : 1;
+    if (stride_edge3 < 1) stride_edge3 = 1;
+
+    // Generate Input Layer Nodes
+    fprintf(f, "    subgraph cluster_input {\n");
+    fprintf(f, "        label=\"Input Layer (Log Scaled)\"; color=forestgreen; style=dashed;\n");
+    for (int i = 0; i < INPUT_SIZE; i += stride_i) {
+        fprintf(f, "        I%d [label=\"In %d\", fillcolor=forestgreen, fontcolor=white];\n", i, i + 1);
+    }
+    fprintf(f, "    }\n\n");
+
+    // Generate Hidden Layer 1 Nodes
+    fprintf(f, "    subgraph cluster_hidden1 {\n");
+    fprintf(f, "        label=\"Hidden Layer 1 (H1 - Log Scaled)\"; color=blue; style=dashed;\n");
+    for (int i = 0; i < H1; i += stride_h1) {
+        fprintf(f, "        H1_%d [label=\"b: %.2f\", fillcolor=lightblue];\n", i, b1[i]);
+    }
+    fprintf(f, "    }\n\n");
+
+    // Generate Hidden Layer 2 Nodes
+    fprintf(f, "    subgraph cluster_hidden2 {\n");
+    fprintf(f, "        label=\"Hidden Layer 2 (H2 - Log Scaled)\"; color=purple; style=dashed;\n");
+    for (int i = 0; i < H2; i += stride_h2) {
+        fprintf(f, "        H2_%d [label=\"b: %.2f\", fillcolor=plum];\n", i, b2[i]);
+    }
+    fprintf(f, "    }\n\n");
+
+    // Generate Output Layer Nodes
+    fprintf(f, "    subgraph cluster_output {\n");
+    fprintf(f, "        label=\"Output Layer\"; color=orange; style=dashed;\n");
+    for (int i = 0; i < OUTPUT; i++) {
+        fprintf(f, "        O%d [label=\"%c\\nb: %.2f\", fillcolor=gold, shape=doublecircle];\n", i, 'A' + i, b3[i]);
+    }
+    fprintf(f, "    }\n\n");
+
+    // Generate Layer 1 -> Layer 2 Edges (Log Scaled)
+    int edge_idx1 = 0;
+    for (int i = 0; i < INPUT_SIZE; i += stride_i) {
+        for (int j = 0; j < H1; j += stride_h1) {
+            if (edge_idx1 % stride_edge1 == 0) {
+                float w = W1[j][i];
+                fprintf(f, "    I%d -> H1_%d [color=%s];\n", i, j, w >= 0 ? "black" : "grey49");
+            }
+            edge_idx1++;
+        }
+    }
+
+    // Generate Layer 2 -> Layer 3 Edges (Log Scaled)
+    int edge_idx2 = 0;
+    for (int i = 0; i < H1; i += stride_h1) {
+        for (int j = 0; j < H2; j += stride_h2) {
+            if (edge_idx2 % stride_edge2 == 0) {
+                float w = W2[j][i];
+                fprintf(f, "    H1_%d -> H2_%d [color=%s];\n", i, j, w >= 0 ? "black" : "grey49");
+            }
+            edge_idx2++;
+        }
+    }
+
+    // Generate Layer 3 -> Output Edges (Log Scaled)
+    int edge_idx3 = 0;
+    for (int i = 0; i < H2; i += stride_h2) {
+        for (int j = 0; j < OUTPUT; j++) {
+            if (edge_idx3 % stride_edge3 == 0) {
+                float w = W3[j][i];
+                fprintf(f, "    H2_%d -> O%d [color=%s];\n", i, j, w >= 0 ? "black" : "grey49");
+            }
+            edge_idx3++;
+        }
+    }
+
+    fprintf(f, "}\n");
+    fclose(f);
+
+    printf("File 'network.dot' generated using Log Base %.2f.\n", LOG_BASE);
+    printf("run : 'dot -Tpng network.dot -o network.png' to get a png\n");
 }

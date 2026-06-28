@@ -25,3 +25,5 @@ all: $(OBJ)
 
 clean:
 	rm -f $(OBJ) all solver_grid.txt result.png
+	rm -f network.png
+	rm -f network.dot

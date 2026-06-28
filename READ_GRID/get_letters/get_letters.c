@@ -401,8 +401,7 @@ double Max_possible_dist(struct family f, char second_call,
 }
 
 
-void merge(struct Dist_with arr[], size_t l, size_t m, size_t r)
-{
+void merge(struct Dist_with arr[], size_t l, size_t m, size_t r){
     
     size_t i, j, k;
     size_t n1 = m - l + 1;
