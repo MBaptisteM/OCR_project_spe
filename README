@@ -6,3 +6,41 @@ Now, if you want to resolve a grid, the picture you want must be in the images f
 If you do not have any pictures, nothing will appear. Between one and ten, they will all be displayed. However, if you have more than ten pictures, only the ten firsts will be displayed.
 Now, choose the image you want, click on it and within seconds, the results will be displayed ! All the words found will be marked by a colored line in the grid. The results are also saved in your files with the name "results.png" and you'll also find the grid of your image written in a txt file under the name "grid_solver.txt".
 
+```mermaid
+flowchart TD
+    %% UI and Input
+    subgraph UI["Pipeline Entry (GUI Window)"]
+        IMG_IN["Input Image<br/>(Selected from READ_GRID/images)"]
+        OPTS["Processing Options & Toggles"]
+    end
+
+    %% Step 1: Pretreatment
+    IMG_IN & OPTS --> PRE["Pretreatment<br/>(angle_correction · noise_reduction · color_correction)"]
+
+    %% Step 2: Extraction
+    PRE --> EXT["Letter Extraction<br/>(Segment characters / regions of interest)"]
+
+    %% Step 3: Grid & Word Processing (Subgraph for internal logic)
+    subgraph GRID_PROC["Grid & Word Processing Logic"]
+        EXT --> REC_G["Recognition of the grid<br/>(Detect lines & orientation)"]
+        EXT --> REC_W["Recognition of every word<br/>(Dictionary / Lexicon matching)"]
+        
+        REC_G & REC_W --> DEL["Deletion of useless information<br/>(Filter background noise & artifacts)"]
+    end
+
+    %% Step 4: OCR
+    DEL --> OCR["OCR Engine<br/>(Recognise characters)"]
+
+    %% Step 5: Solver
+    OCR --> SOLVER["Solver Module<br/>(Word Search Algorithm / Pathfinding)"]
+
+    %% Step 6: Final Rendering
+    SOLVER --> WRITE["Write Answers on Image<br/>(Draw colored lines over found words)"]
+    IMG_IN -. "Original background template" .─► WRITE
+
+    WRITE --> OUT[("Final Files Generated<br/>(results.png & grid_solver.txt)")]
+
+    %% Styling
+    style IMG_IN fill:#f9f,stroke:#333,stroke-width:2px
+    style OUT fill:#bbf,stroke:#333,stroke-width:2px
+```
