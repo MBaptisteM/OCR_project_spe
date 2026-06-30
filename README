@@ -36,7 +36,7 @@ flowchart TD
 
     %% Step 6: Final Rendering
     SOLVER --> WRITE["Write Answers on Image<br/>(Draw colored lines over found words)"]
-    IMG_IN -. "Original background template" .─► WRITE
+    IMG_IN -. "Original background template" .-> WRITE
 
     WRITE --> OUT[("Final Files Generated<br/>(results.png & grid_solver.txt)")]
 
